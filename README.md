@@ -21,3 +21,6 @@ Optional
 - User can edit their home screen but not the cassette they were given
 - User can comment on tapes
 - Cassette tape is animated similar to how an actual tape would move
+
+
+**Can find the wireframes, data model, and enpoints in this** [document](https://docs.google.com/document/d/1rVLOfvRXN9g18tD9F5geYz4axgq36uExaG8zKJlKlu4/edit#heading=h.nmpngoh030r4)
