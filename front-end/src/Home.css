@@ -1,0 +1,15 @@
+.profileIcon {
+    border-radius: 360px;
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #6658f6;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    height: 4em;
+}
+
+.profileIcon:hover {
+    background-color: #5648c6;
+}
