@@ -10,18 +10,26 @@ function Login() {
     const navigate = useNavigate()
 
     const handleChangeEmail = (e) => {
+        setResult('')
         setEmail(e.target.value);
     }
 
     const handleChangeUser = (e) => {
+        setResult('')
         setUser(e.target.value);
     }
 
     const handleChangePassword = (e) => {
+        setResult('')
         setPassword(e.target.value);
     }
 
     const handleCreate = () => {
+        if (!email || !username || !password) {
+            setResult('Please fill out all fields');
+            return;
+        }
+
         fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/create`,
             {
                 method: "POST",
@@ -44,7 +52,7 @@ function Login() {
                     setResult('')
                     navigate(`/${username}`)
                 }
-                else{
+                else {
                     setResult("Failed to create, try again or log in!")
                 }
             })
@@ -54,6 +62,11 @@ function Login() {
     }
 
     const handleLogin = () => {
+        if (!username || !password) {
+            setResult('Please fill out all fields');
+            return;
+        }
+
         fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/login`,
             {
                 method: "POST",
@@ -75,7 +88,7 @@ function Login() {
                     setResult('')
                     navigate(`/${username}`)
                 }
-                else{
+                else {
                     setResult("Failed to login, try again or create an account!")
                 }
             })
@@ -83,14 +96,14 @@ function Login() {
                 setResult("Failed to login!");
             });
     }
-    
+
     return (
-        <div className='Login'>
-            <header>
+        <div className='loginPage'>
+            <header className='loginHeader'>
                 <h1 className='loginTite'>RetroBeat</h1>
             </header>
 
-            <main>
+            <main className='login'>
                 <h2 className='signUp'>Sign Up / Create Account </h2>
                 <div>
                     <label className='labels'>email: </label>
