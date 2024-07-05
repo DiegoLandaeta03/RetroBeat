@@ -27,12 +27,11 @@ function SpotifyCallback() {
                 throw new Error('Failed to exchange code for token');
             }
             const data = await response.json();
-            console.log('Access Token:', data.access_token);
             localStorage.setItem('access_token', data.access_token)
             createUser();
         } catch (error) {
             console.error('Error:', error);
-            navigate('/'); 
+            navigate('/');
         }
     };
 
@@ -45,16 +44,28 @@ function SpotifyCallback() {
                     'Authorization': `Bearer ${accessToken}`,
                 },
             })
-            .then(response => response.json())
-            .then(result => {
-                const username = result.id
-                const email = result.email
-                navigate(`/${username}`); 
-                console.log('Logged in and here is the result:', username, email);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(result => {
+                    const email = result.email
+                    const username = result.id
+                    const token = localStorage.getItem('access_token')
+                    fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/login`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                email,
+                                username,
+                                token
+                            }),
+                        })
+                    navigate(`/${username}`);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         } else {
             console.error('No access token found');
         }

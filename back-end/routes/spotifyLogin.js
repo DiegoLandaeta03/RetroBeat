@@ -10,7 +10,7 @@ router.use(express.json())
 var spotify_client_id = process.env.SPOTIFY_CLIENT_ID
 var spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET
 
-router.get('/auth/login', (req, res) => {
+router.get('/login', (req, res) => {
     var scope = "user-read-email \
                 user-top-read \
                 user-read-recently-played\
@@ -31,7 +31,7 @@ router.get('/auth/login', (req, res) => {
     res.redirect('https://accounts.spotify.com/authorize/?' + auth_query_parameters.toString());
 })
 
-router.post('/auth/exchange_code', (req, res) => {
+router.post('/exchange_code', (req, res) => {
     const { code } = req.body;
     const authOptions = {
         url: 'https://accounts.spotify.com/api/token',
@@ -58,7 +58,7 @@ router.post('/auth/exchange_code', (req, res) => {
     });
 });
 
-router.get('/auth/token', (req, res) => {
+router.get('/token', (req, res) => {
     res.json(
         {
             access_token: access_token
