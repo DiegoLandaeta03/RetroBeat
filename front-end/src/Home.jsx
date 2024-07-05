@@ -11,6 +11,12 @@ function Home() {
             <header>
                 <Navbar username={username}/>
             </header>
+            <main>
+                <div className='beatTitle'>
+                    <h2>Your Beats</h2>
+                </div>
+                
+            </main>
         </div>
     )
 }
