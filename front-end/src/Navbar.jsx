@@ -16,18 +16,17 @@ function Navbar({ username }) {
 
     const handleLogout = () => {
         try {
-            fetch('http://localhost:3000/logout', {
+            fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/logout`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    token: localStorage.getItem('refreshToken')
+                    token: localStorage.getItem('access_token')
                 })
             })
 
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('access_token')
             navigate('/')
         } catch (error) {
             alert('Failed to logout')
@@ -43,24 +42,26 @@ function Navbar({ username }) {
     }
 
     return (
-        <div className='nav'>
-            <button className='profileIcon'>Profile</button>
-            <h1>RetroBeat</h1>
-            <div
-                className="menu"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
-                <button className='dropdownButton'>Menu</button>
-                {isDropdownVisible && (
-                    <div className="dropdownMenu">
-                        <ul>
-                            <li onClick={handleHome}>Home</li>
-                            <li onClick={handleCreate}>Create</li>
-                            <li onClick={handleLogout}>Logout</li>
-                        </ul>
-                    </div>
-                )}
+        <div className='navContainer'>
+            <div className='nav'>
+                <button className='profileIcon'>Profile</button>
+                <h1>SoundStitch</h1>
+                <div
+                    className="menu"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <button className='dropdownButton'>Menu</button>
+                    {isDropdownVisible && (
+                        <div className="dropdownMenu">
+                            <ul>
+                                <li onClick={handleHome}>Home</li>
+                                <li onClick={handleCreate}>Create</li>
+                                <li onClick={handleLogout}>Logout</li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
