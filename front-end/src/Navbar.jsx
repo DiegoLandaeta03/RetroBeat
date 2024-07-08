@@ -22,12 +22,11 @@ function Navbar({ username }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    token: localStorage.getItem('refreshToken')
+                    token: localStorage.getItem('access_token')
                 })
             })
 
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('access_token')
             navigate('/')
         } catch (error) {
             alert('Failed to logout')
@@ -45,7 +44,7 @@ function Navbar({ username }) {
     return (
         <div className='nav'>
             <button className='profileIcon'>Profile</button>
-            <h1>RetroBeat</h1>
+            <h1>SoundStitch</h1>
             <div
                 className="menu"
                 onMouseEnter={handleMouseEnter}
