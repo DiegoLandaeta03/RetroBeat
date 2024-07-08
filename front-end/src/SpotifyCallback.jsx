@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Spinner, Box, Text } from '@chakra-ui/react';
 
 function SpotifyCallback() {
     const location = useLocation();
     const navigate = useNavigate();
     const tokenFetched = useRef(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const code = new URLSearchParams(location.search).get('code');
@@ -65,6 +67,11 @@ function SpotifyCallback() {
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                })
+                .finally(() => {
+                    setTimeout(() => {
+                        setIsLoading(false);
+                    }, 3000);
                 });
         } else {
             console.error('No access token found');
@@ -72,7 +79,19 @@ function SpotifyCallback() {
     }
 
     return (
-        <div>Loading...</div>
+        <Box minHeight="100vh" display="flex" justifyContent="center" alignItems="center" flexDirection="column">
+            <Text mb={4} fontSize="3xl" color="white">
+                Logging you in...
+            </Text>
+            {isLoading && (
+                <Spinner
+                    thickness="6px"
+                    speed="0.5s"
+                    size="xl"
+                    color="purple"
+                />
+            )}
+        </Box>
     );
 }
 
