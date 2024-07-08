@@ -1,5 +1,6 @@
 import Navbar from './Navbar'
 import './Home.css'
+import { Heading } from '@chakra-ui/react'
 import { useParams } from 'react-router-dom'
 
 function Home() {
@@ -9,13 +10,13 @@ function Home() {
     return (
         <div className='Home'>
             <header>
-                <Navbar username={username}/>
+                <Navbar username={username} />
             </header>
             <main>
                 <div className='beatTitle'>
-                    <h2>Your Beats</h2>
+                    <Heading as='h2' size='2xl'>Your Beats</Heading>
                 </div>
-                
+
             </main>
         </div>
     )

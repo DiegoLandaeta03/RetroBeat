@@ -1,23 +1,11 @@
-.navContainer {
-    display: flex;
-    justify-content: center;
-}
-
-.nav {
-    width: 70%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
 .profileIcon {
     border-radius: 200px;
     padding: 1em 1em;
     color: white;
     border: none;
     cursor: pointer;
-    background: rgb(115, 41, 123);
-    background: linear-gradient(0deg, rgba(115, 41, 123, 0.9) 10%, rgba(83, 41, 140, 0.9) 100%);
+    background: #73297b;
+    background: linear-gradient(0deg, rgba(115, 41, 123, 0.9) 10%, rgb(81, 40, 138, 0.9) 100%);
     font-size: 16px;
     transition: all 0.2s ease;
 }

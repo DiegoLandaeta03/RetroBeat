@@ -16,7 +16,7 @@ function SpotifyCallback() {
 
     const exchangeCodeForToken = async (code) => {
         try {
-            const response = await fetch(`http://localhost:3000/auth/exchange_code`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/auth/exchange_code`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
