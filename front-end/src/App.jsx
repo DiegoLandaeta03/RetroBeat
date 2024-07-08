@@ -1,4 +1,3 @@
-import './App.css'
 import Home from './Home'
 import Create from './Create';
 import SpotifyLogin from './SpotifyLogin';
