@@ -14,7 +14,7 @@ function Home() {
             </header>
             <main>
                 <div className='beatTitle'>
-                    <Heading as='h2' size='2xl'>Your Beats</Heading>
+                    <Heading as='h2' size='2xl'>Your Stitches</Heading>
                 </div>
 
             </main>
