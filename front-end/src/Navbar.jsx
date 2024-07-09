@@ -11,13 +11,13 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
+    IconButton
 } from "@chakra-ui/react";
 
-import { LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
+import { HamburgerIcon, LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
 
 function Navbar({ username }) {
     const navigate = useNavigate();
-    const [isDropdownVisible, setDropdownVisible] = useState(false);
 
     const handleHome = () => {
         navigate(`/${username}`);
@@ -47,15 +47,19 @@ function Navbar({ username }) {
     };
 
     return (
-        <Box w="70%" color="white" p={4} mx="auto">
+        <Box w="100%"  color="white" p={4} mx="auto" paddingTop='2em' paddingBottom='2em' bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)" paddingLeft='0'>
             <Flex align="center">
+                <Heading marginLeft='0.7em' paddingLeft='0' as='h1' size='2xl' textAlign='left' flexGrow={1}>
+                    SoundStitch
+                </Heading>
+
                 <Button
                     className="profileIcon"
                     bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
-                    borderRadius="full"
                     color="white"
                     px={6}
                     py={3}
+                    marginRight='1em'
                     _hover={{
                         opacity: 1,
                         backgroundSize: 'auto',
@@ -63,21 +67,14 @@ function Navbar({ username }) {
                         transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
                     }}
                 >
-                    <Text fontSize="lg">Profile</Text>
+                    <Text fontSize="lg">{username}</Text>
                 </Button>
-
-                <Spacer />
-
-                <Heading as='h1' size='2xl' textAlign='center' flexGrow={1}>
-                    SoundStitch
-                </Heading>
-
-                <Spacer />
 
                 <Menu>
                     <MenuButton
-                        as={Button}
+                        as={IconButton}
                         aria-label='Options'
+                        icon={<HamburgerIcon />}
                         bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
                         color={'white'}
                         _hover={{
@@ -85,11 +82,11 @@ function Navbar({ username }) {
                             backgroundSize: 'auto',
                             boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
                             transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+
                         }}>
-                        <Text fontSize="lg">Menu</Text>
                     </MenuButton>
 
-                    <MenuList style={{ padding: 0, margin: 0 }} bgColor="#242424">
+                    <MenuList style={{ padding: 0, margin: 0, border: 'none' }} bgColor="#242424">
                         <MenuItem
                             style={{ margin: 0 }}
                             icon={<SunIcon />}
@@ -120,7 +117,7 @@ function Navbar({ username }) {
                                 color: 'white',
                             }}
                         >
-                            <Text fontSize="lg">Create Playlist</Text>
+                            <Text fontSize="lg">Create Stitch</Text>
                         </MenuItem>
                         <MenuItem
                             style={{ margin: 0 }}
