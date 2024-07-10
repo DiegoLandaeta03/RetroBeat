@@ -18,6 +18,7 @@ model User {
   username       String @unique
   email          String @unique
   tokens         Token []
+  stitches       Stitch []
 }
 
 model Token {
@@ -26,6 +27,34 @@ model Token {
   userId    Int
   user      User      @relation(fields: [userId], references: [id])
   createdAt DateTime  @default(now())
+}
+
+model Stitch {
+  id          Int  @id @default(autoincrement())
+  title       String
+  duration    Int
+  songs       Song[]
+  mood        Float
+  dance       Float
+  mixability  Float
+  genre       String
+
+  User        User  @relation(fields: [userId], references: [id])
+  userId      Int
+}
+
+model Song {
+  id          Int  @id @default(autoincrement())
+  uri         String
+  title       String
+  artist      String
+  image       String
+  duration    Int
+  previewUrl  String
+  popularity  Int
+
+  Stitch     Stitch @relation(fields: [stitchId], references: [id])
+  stitchId   Int
 }
 
 
