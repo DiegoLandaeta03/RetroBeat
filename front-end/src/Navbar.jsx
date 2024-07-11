@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Flex,
-    Spacer,
     Heading,
     Text,
     Button,
@@ -16,15 +14,36 @@ import {
 
 import { HamburgerIcon, LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
 
-function Navbar({ username }) {
+function Navbar({ username, page }) {
     const navigate = useNavigate();
 
     const handleHome = () => {
         navigate(`/${username}`);
     };
 
-    const handleCreate = () => {
-        navigate(`/${username}/create`);
+    const handleCreate = async () => {
+        if (page === "create") {
+            return;
+        }
+
+        const stitchId = await createStitch();
+        navigate(`/${username}/create`, { state: { stitchId } });
+    };
+
+    const createStitch = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title: 'Untitled', username })
+            });
+            const data = await response.json();
+            return data.id;
+        } catch (error) {
+            console.error('Error creating new stitch:', error);
+        }
     };
 
     const handleLogout = () => {
@@ -47,7 +66,7 @@ function Navbar({ username }) {
     };
 
     return (
-        <Box w="100%"  color="white" p={4} mx="auto" paddingTop='2em' paddingBottom='2em' bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)" paddingLeft='0'>
+        <Box w="100%" color="white" p={4} mx="auto" paddingTop='2em' paddingBottom='2em' bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)" paddingLeft='0'>
             <Flex align="center">
                 <Heading marginLeft='0.7em' paddingLeft='0' as='h1' size='2xl' textAlign='left' flexGrow={1}>
                     SoundStitch

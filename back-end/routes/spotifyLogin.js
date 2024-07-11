@@ -1,6 +1,5 @@
 const express = require('express')
 const request = require('request')
-const { PrismaClient } = require('@prisma/client')
 const router = express.Router()
 
 router.use(express.json())

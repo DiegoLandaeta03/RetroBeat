@@ -4,14 +4,16 @@ const cors = require('cors')
 const app = express()
 const PORT = 3000
 const login = require('./routes/login')
-const user = require('./routes/user')
 const spotifyLogin = require('./routes/spotifyLogin')
+const stitch = require('./routes/stitchRoutes')
+const song = require('./routes/songRoutes')
 
 app.use(cors())
 app.use(express.json())
 app.use('/auth', spotifyLogin)
 app.use('/', login)
-app.use('/user', user)
+app.use('/stitch', stitch)
+app.use('/song', song)
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`)
