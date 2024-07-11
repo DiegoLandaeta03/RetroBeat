@@ -43,18 +43,17 @@ model Stitch {
 }
 
 model Song {
-  id          Int  @id @default(autoincrement())
-  uri         String
-  title       String
-  artist      String
-  image       String
-  duration    Int
-  previewUrl  String
-  popularity  Int
+  id             Int    @id @default(autoincrement())
+  uri            String
+  name           String
+  artists        Json
+  album          Json
+  duration_ms    Int
+  preview_url    String?
+  popularity     Int
 
-  Stitch     Stitch @relation(fields: [stitchId], references: [id])
-  stitchId   Int
+  Stitch         Stitch @relation(fields: [stitchId], references: [id])
+  stitchId       Int
 }
-
 
 

@@ -23,21 +23,44 @@ router.get('/:stitchId', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     try {
-        const { stitchId, uri, title, artist, image, duration, previewUrl, popularity } = req.body
+        const { stitchId, uri, name, artists, album, duration_ms, preview_url, popularity } = req.body
 
-        const newSong = await prisma.song.create({
-            data: {
-                uri,
-                title,
-                artist,
-                image,
-                duration,
-                previewUrl,
-                popularity,
-                stitchId: stitchId
-            }
-        })
-        res.status(200).json(newSong)
+        const simplifiedAlbum = {
+            name: album.name,
+            images: album.images
+        };
+
+        if (preview_url) {
+            const newSong = await prisma.song.create({
+                data: {
+                    stitchId,
+                    uri,
+                    name,
+                    artists,
+                    album: simplifiedAlbum,
+                    duration_ms: parseInt(duration_ms),
+                    preview_url,
+                    popularity: parseInt(popularity)
+                }
+            })
+            res.status(200).json(newSong)
+        }
+        else {
+            const newSong = await prisma.song.create({
+                data: {
+                    stitchId,
+                    uri,
+                    name,
+                    artists,
+                    album: simplifiedAlbum,
+                    duration_ms: parseInt(duration_ms),
+                    preview_url: null,
+                    popularity: parseInt(popularity)
+                }
+            })
+            res.status(200).json(newSong)
+        }
+        
     }
     catch (error) {
         res.status(500).json({ error: 'Failed to add song.' })
@@ -55,7 +78,7 @@ router.delete('/:id', async (req, res) => {
         res.status(200).json(deletedSong)
     }
     catch (error) {
-        res.status(500).json({ error: 'Failed to delete stitch.' })
+        res.status(500).json({ error: 'Failed to delete song.' })
     }
 })
 
