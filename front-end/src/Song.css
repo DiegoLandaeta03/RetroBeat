@@ -1,5 +1,4 @@
 #song {
-    width: 400px;
     transition: all 0.3s ease;
     display: flex;
     background-color: rgba(225, 225, 225, 0.8);

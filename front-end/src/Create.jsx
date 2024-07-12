@@ -1,12 +1,14 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Box, Input, FormControl, Heading } from '@chakra-ui/react';
+import { Box, Input, FormControl, Heading, Button, Text } from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Song from './Song';
+import CustomName from './CustomName';
 
 function Create() {
     const params = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
     const username = params.username;
     const [searchOptions, setSearchOptions] = useState([]);
     const [currentStitchSongs, setCurrentStitchSongs] = useState([]);
@@ -37,7 +39,7 @@ function Create() {
             const searchData = await response.json();
             setSearchOptions(searchData.tracks.items);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -47,6 +49,20 @@ function Create() {
             currentAudio.currentTime = 0;
         }
         setCurrentAudio(audioElement);
+    };
+
+    const updateImage = async (imageUrl) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/image`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stitchId, imageUrl })
+            });
+        } catch (error) {
+            console.error('Error updating stitch:', error);
+        }
     };
 
     const handleAdd = (track) => {
@@ -71,7 +87,6 @@ function Create() {
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Song added:', data);
                     getStitchSongs();
                 })
                 .catch(error => {
@@ -86,6 +101,10 @@ function Create() {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/song/${stitchId}`);
             const stitchSongs = await response.json();
+            if (stitchSongs.length != 0) {
+                const topSongImage = stitchSongs[0].album.images[0].url
+                updateImage(topSongImage)
+            }
             setCurrentStitchSongs(stitchSongs);
         } catch (error) {
             console.error('Error getting songs in stitch:', error);
@@ -95,6 +114,10 @@ function Create() {
 
     const handleRemove = (songId) => {
         setDeleteId(songId);
+    };
+
+    const finalizeStitch = () => {
+        navigate(`/${username}`);
     };
 
     useEffect(() => {
@@ -114,7 +137,7 @@ function Create() {
         } else {
             getStitchSongs();
         }
-    }, [deleteId, stitchId]); 
+    }, [deleteId, stitchId]);
 
     return (
         <div className='Create'>
@@ -122,6 +145,9 @@ function Create() {
                 <Navbar username={username} page={"create"} />
             </header>
             <main>
+                <Box display="flex" justifyContent="center" textAlign="center" mt="1em">
+                    <CustomName stitchId={stitchId} />
+                </Box>
                 <Box width="100%" display="flex" justifyContent="space-evenly">
                     <Box className="searchSection" color="white" minHeight="100vh" display="flex" flexDirection="column" alignItems="center" flex="1" mt="2em">
                         <Heading as='h3' size='xl'>Add Songs</Heading>
@@ -147,6 +173,25 @@ function Create() {
                                 />
                             ))}
                         </Box>
+                    </Box>
+                    <Box mt="2em">
+                        <Button
+                            className="finalizeStitch"
+                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                            color="white"
+                            width="10em"
+                            _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                            _active={{ boxShadow: 'none' }}
+                            _hover={{
+                                opacity: 1,
+                                backgroundSize: 'auto',
+                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                            }}
+                            onClick={finalizeStitch}
+                        >
+                            <Text fontSize="lg">Finalize Stitch</Text>
+                        </Button>
                     </Box>
                     <Box className="stitchSection" color="white" minHeight="100vh" display="flex" flexDirection="column" alignItems="center" flex="1" mt="2em">
                         <Heading as='h3' size='xl'>Current Stitch</Heading>

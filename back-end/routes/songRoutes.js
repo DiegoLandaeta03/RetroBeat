@@ -12,7 +12,13 @@ router.get('/:stitchId', async (req, res) => {
             where: {
                 id: stitchId
             },
-            include: { songs: true }
+            include: {
+                songs: {
+                    orderBy: {
+                        id: 'asc'
+                    }
+                }
+            }
         })
         res.status(200).json(stitch.songs)
     }

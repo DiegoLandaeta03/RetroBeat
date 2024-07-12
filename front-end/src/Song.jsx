@@ -48,7 +48,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
                     whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    width="20em"
+                    width="10em"
                 >
                     {name}
                 </Text>
@@ -60,7 +60,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
                     whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    width="20em"
+                    width="10em"
                 >
                     {artists.map(artist => artist.name).join(', ')}
                 </Text>
@@ -71,7 +71,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
                     whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    width="20em"
+                    width="10em"
                 >
                     {album.name}
                 </Text>
@@ -79,11 +79,11 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
             <Box ml="auto" textAlign="center" display="flex" alignItems="center" position="relative">
                 <Box mr={2}>
                     {preview_url ? (
-                        <audio ref={audioRef} controls style={{ width: '6.5em' }} onPlay={handlePlay}>
+                        <audio ref={audioRef} controls style={{ width: '15em' }} onPlay={handlePlay}>
                             <source src={preview_url} type="audio/mpeg" />
                         </audio>
                     ) : (
-                        <Box width="6.5em">
+                        <Box width="15em">
                             <Text id="duration" fontSize="0.6em" mr={3}>Audio not available</Text>
                         </Box>
                     )}

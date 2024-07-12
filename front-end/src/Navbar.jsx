@@ -79,6 +79,8 @@ function Navbar({ username, page }) {
                     px={6}
                     py={3}
                     marginRight='1em'
+                    _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                    _active={{ boxShadow: 'none' }}
                     _hover={{
                         opacity: 1,
                         backgroundSize: 'auto',
@@ -96,6 +98,8 @@ function Navbar({ username, page }) {
                         icon={<HamburgerIcon />}
                         bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
                         color={'white'}
+                        _focus={{ boxShadow: 'none' }}
+                        _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
                         _hover={{
                             opacity: 1,
                             backgroundSize: 'auto',
