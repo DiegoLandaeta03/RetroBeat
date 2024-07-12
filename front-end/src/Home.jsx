@@ -1,25 +1,74 @@
-import Navbar from './Navbar'
-import './Home.css'
-import { Heading } from '@chakra-ui/react'
-import { useParams } from 'react-router-dom'
+import Navbar from './Navbar';
+import './Home.css';
+import { Heading, Box, SimpleGrid } from '@chakra-ui/react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import Stitch from './Stitch';
 
 function Home() {
     const params = useParams();
+    const navigate = useNavigate();
     const username = params.username;
+    const [stitches, setStitches] = useState([]);
+    const [deleteId, setDeleteId] = useState();
+
+    const getStitches = async () => {
+        try {
+            const options = {
+                method: "GET",
+            };
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/${username}`, options);
+            const data = await response.json();
+            setStitches(data);
+        } catch (error) {
+            console.error('Error getting stitches:', error);
+        }
+    };
+
+    const deleteStitch = (stitchId) => (event) => {
+        event.stopPropagation();
+        setDeleteId(stitchId);
+    };
+
+    useEffect(() => {
+        if (deleteId) {
+            console.log('Going to delete:', deleteId);
+            fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/${deleteId}`, {
+                method: "DELETE",
+            })
+                .then(response => {
+                    if (response.ok) {
+                        setDeleteId('');
+                        getStitches();
+                    } else {
+                        throw new Error('Failed to delete stitch');
+                    }
+                })
+                .catch(error => console.error('Error deleting stitch:', error));
+        } else {
+            getStitches();
+        }
+    }, [deleteId, username]);
 
     return (
         <div className='Home'>
             <header>
-                <Navbar username={username} />
+                <Navbar username={username} page={"home"} />
             </header>
             <main>
-                <div className='beatTitle'>
+                <Box className='beatTitle'>
                     <Heading as='h2' size='2xl'>Your Stitches</Heading>
-                </div>
-
+                </Box>
+                {stitches && (
+                    <SimpleGrid spacing={4} p={10} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
+                        {stitches.map((stitch) => (
+                            <Stitch key={stitch.id} stitch={stitch} username={username} deleteStitch={deleteStitch}/>
+                        ))}
+                    </SimpleGrid>
+                )}
             </main>
         </div>
-    )
+    );
 }
 
-export default Home
+export default Home;

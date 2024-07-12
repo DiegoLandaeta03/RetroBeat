@@ -33,6 +33,7 @@ model Stitch {
   id          Int  @id @default(autoincrement())
   title       String
   duration    Int
+  imageUrl    String
   songs       Song[]
   mood        Float
   dance       Float
