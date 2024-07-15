@@ -104,6 +104,8 @@ function Create() {
             if (stitchSongs.length != 0) {
                 const topSongImage = stitchSongs[0].album.images[0].url
                 updateImage(topSongImage)
+            } else {
+                updateImage('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Image_not_available.png/640px-Image_not_available.png')
             }
             setCurrentStitchSongs(stitchSongs);
         } catch (error) {

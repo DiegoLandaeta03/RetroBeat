@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import {
     Box,
     Flex,
@@ -9,35 +10,78 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    IconButton
+    IconButton,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalCloseButton,
+    ModalBody,
+    ModalFooter,
+    useDisclosure,
+    Slider,
+    SliderMark,
+    SliderTrack,
+    SliderFilledTrack,
+    Tooltip,
+    SliderThumb
 } from "@chakra-ui/react";
-
 import { HamburgerIcon, LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
 
 function Navbar({ username, page }) {
     const navigate = useNavigate();
+    const { isOpen, onOpen, onClose: closeModal } = useDisclosure();
+    const [moodValue, setMoodValue] = useState(50);
+    const [danceValue, setDanceValue] = useState(50);
+    const [mixValue, setMixValue] = useState(50);
+    const [exploreValue, setExploreValue] = useState(50);
+    const [showMoodValue, setShowMood] = useState(false);
+    const [showDanceValue, setShowDance] = useState(false);
+    const [showMixValue, setShowMix] = useState(false);
+    const [showExploreValue, setShowExplore] = useState(false);
+
+    const labelStyles = {
+        mt: '2',
+        ml: '-2.5',
+        fontSize: 'sm',
+        color: 'black'
+    }
+
 
     const handleHome = () => {
         navigate(`/${username}`);
     };
 
-    const handleCreate = async () => {
-        if (page === "create") {
-            return;
-        }
+    const handleModalClose = () => {
+        setMoodValue(50);
+        setDanceValue(50);
+        setMixValue(50);
+        setExploreValue(50);
+        closeModal();
+    };
 
-        const stitchId = await createStitch();
+    const handleSubmit = async () => {
+        console.log('Form submitted with values:', { moodValue, danceValue, mixValue, exploreValue });
+        const stitchId = await createStitch({ moodValue, danceValue, mixValue, exploreValue });
+        handleModalClose();
         navigate(`/${username}/create`, { state: { stitchId } });
     };
 
-    const createStitch = async () => {
+    const createStitch = async (values) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ title: 'Untitled', username })
+                body: JSON.stringify({
+                    title: 'Untitled',
+                    username,
+                    mood: values.moodValue / 100,
+                    dance: values.danceValue / 100,
+                    mix: values.mixValue / 100,
+                    explore: values.exploreValue / 100
+                })
             });
             const data = await response.json();
             return data.id;
@@ -45,6 +89,7 @@ function Navbar({ username, page }) {
             console.error('Error creating new stitch:', error);
         }
     };
+
 
     const handleLogout = () => {
         try {
@@ -79,8 +124,7 @@ function Navbar({ username, page }) {
                     px={6}
                     py={3}
                     marginRight='1em'
-                    _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
-                    _active={{ boxShadow: 'none' }}
+                    _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
                     _hover={{
                         opacity: 1,
                         backgroundSize: 'auto',
@@ -129,7 +173,7 @@ function Navbar({ username, page }) {
                         <MenuItem
                             style={{ margin: 0 }}
                             icon={<AddIcon />}
-                            onClick={handleCreate}
+                            onClick={onOpen}
                             color={'black'}
                             _hover={{
                                 bg: 'linear-gradient(0deg, rgba(115, 41, 123, 0.9) 10%, rgba(83, 41, 140, 0.9) 100%)',
@@ -142,6 +186,143 @@ function Navbar({ username, page }) {
                         >
                             <Text fontSize="lg">Create Stitch</Text>
                         </MenuItem>
+
+                        <Modal size="xl" onClose={handleModalClose} isOpen={isOpen} motionPreset='slideInBottom' isCentered>
+                            <ModalOverlay backdropFilter='auto' backdropBlur='2px' />
+                            <ModalContent>
+                                <ModalHeader color="black" textAlign="center">
+                                    Stitch Preferences
+                                </ModalHeader>
+                                <ModalCloseButton />
+                                <ModalBody textAlign="center">
+                                    <Text color='black' as='b'>Mood</Text>
+                                    <Box p={4} pt={7} mb='2em'>
+                                        <Slider aria-label='slider-ex-6'
+                                            onChange={(val) => setMoodValue(val)}
+                                            onMouseEnter={() => setShowMood(true)}
+                                            onMouseLeave={() => setShowMood(false)}>
+                                            <SliderMark value={25} {...labelStyles}>
+                                                25%
+                                            </SliderMark>
+                                            <SliderMark value={50} {...labelStyles}>
+                                                50%
+                                            </SliderMark>
+                                            <SliderMark value={75} {...labelStyles}>
+                                                75%
+                                            </SliderMark>
+                                            <SliderTrack>
+                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
+                                            </SliderTrack>
+                                            <Tooltip
+                                                hasArrow
+                                                bg='rgb(83, 41, 140)'
+                                                color='white'
+                                                placement='top'
+                                                isOpen={showMoodValue}
+                                                label={`${moodValue}%`}
+                                            >
+                                                <SliderThumb />
+                                            </Tooltip>
+                                        </Slider>
+                                    </Box>
+                                    <Text color='black' as='b'>Danceability</Text>
+                                    <Box p={4} pt={7} mb='2em'>
+                                        <Slider aria-label='slider-ex-6'
+                                            onChange={(val) => setDanceValue(val)}
+                                            onMouseEnter={() => setShowDance(true)}
+                                            onMouseLeave={() => setShowDance(false)}>
+                                            <SliderMark value={25} {...labelStyles}>
+                                                25%
+                                            </SliderMark>
+                                            <SliderMark value={50} {...labelStyles}>
+                                                50%
+                                            </SliderMark>
+                                            <SliderMark value={75} {...labelStyles}>
+                                                75%
+                                            </SliderMark>
+                                            <SliderTrack>
+                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
+                                            </SliderTrack>
+                                            <Tooltip
+                                                hasArrow
+                                                bg='rgb(83, 41, 140)'
+                                                color='white'
+                                                placement='top'
+                                                isOpen={showDanceValue}
+                                                label={`${danceValue}%`}
+                                            >
+                                                <SliderThumb />
+                                            </Tooltip>
+                                        </Slider>
+                                    </Box>
+                                    <Text color='black' as='b'>Mixability</Text>
+                                    <Box p={4} pt={7} mb='2em'>
+                                        <Slider aria-label='slider-ex-6'
+                                            onChange={(val) => setMixValue(val)}
+                                            onMouseEnter={() => setShowMix(true)}
+                                            onMouseLeave={() => setShowMix(false)}>
+                                            <SliderMark value={25} {...labelStyles}>
+                                                25%
+                                            </SliderMark>
+                                            <SliderMark value={50} {...labelStyles}>
+                                                50%
+                                            </SliderMark>
+                                            <SliderMark value={75} {...labelStyles}>
+                                                75%
+                                            </SliderMark>
+                                            <SliderTrack>
+                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
+                                            </SliderTrack>
+                                            <Tooltip
+                                                hasArrow
+                                                bg='rgb(83, 41, 140)'
+                                                color='white'
+                                                placement='top'
+                                                isOpen={showMixValue}
+                                                label={`${mixValue}%`}
+                                            >
+                                                <SliderThumb />
+                                            </Tooltip>
+                                        </Slider>
+                                    </Box>
+                                    <Text color='black' as='b'>Explore</Text>
+                                    <Box p={4} pt={7}>
+                                        <Slider aria-label='slider-ex-6'
+                                            onChange={(val) => setExploreValue(val)}
+                                            onMouseEnter={() => setShowExplore(true)}
+                                            onMouseLeave={() => setShowExplore(false)}>
+                                            <SliderMark value={25} {...labelStyles}>
+                                                25%
+                                            </SliderMark>
+                                            <SliderMark value={50} {...labelStyles}>
+                                                50%
+                                            </SliderMark>
+                                            <SliderMark value={75} {...labelStyles}>
+                                                75%
+                                            </SliderMark>
+                                            <SliderTrack>
+                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
+                                            </SliderTrack>
+                                            <Tooltip
+                                                hasArrow
+                                                bg='rgb(83, 41, 140)'
+                                                color='white'
+                                                placement='top'
+                                                isOpen={showExploreValue}
+                                                label={`${exploreValue}%`}
+                                            >
+                                                <SliderThumb />
+                                            </Tooltip>
+                                        </Slider>
+                                    </Box>
+                                </ModalBody>
+                                <ModalFooter display="flex" justifyContent="center">
+                                    <Button onClick={handleSubmit}>Submit</Button>
+                                    <Button onClick={handleModalClose} ml={3}>Close</Button>
+                                </ModalFooter>
+                            </ModalContent>
+                        </Modal>
+
                         <MenuItem
                             style={{ margin: 0 }}
                             icon={<LockIcon />}
