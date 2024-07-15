@@ -1,13 +1,12 @@
 import Navbar from './Navbar';
 import './Home.css';
 import { Heading, Box, SimpleGrid } from '@chakra-ui/react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Stitch from './Stitch';
 
 function Home() {
     const params = useParams();
-    const navigate = useNavigate();
     const username = params.username;
     const [stitches, setStitches] = useState([]);
     const [deleteId, setDeleteId] = useState();
@@ -32,7 +31,6 @@ function Home() {
 
     useEffect(() => {
         if (deleteId) {
-            console.log('Going to delete:', deleteId);
             fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/${deleteId}`, {
                 method: "DELETE",
             })

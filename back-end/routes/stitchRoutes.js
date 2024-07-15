@@ -56,7 +56,7 @@ router.get('/title/:stitchId', async (req, res) => {
 });
 
 router.post('/create', async (req, res) => {
-    const { title, username } = req.body
+    const { title, username, mood, dance, mix, explore } = req.body
 
     const user = await prisma.user.findUnique({
         where: {
@@ -69,10 +69,10 @@ router.post('/create', async (req, res) => {
             title,
             duration: 0,
             imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Image_not_available.png/640px-Image_not_available.png',
-            mood: 0,
-            dance: 0,
-            mixability: 0,
-            genre: "",
+            mood,
+            dance,
+            mix,
+            explore,
             userId: user.id
         }
     })
@@ -104,7 +104,7 @@ router.patch('/title', async (req, res) => {
 
 router.patch('/image', async (req, res) => {
     const { stitchId, imageUrl } = req.body;
-
+    
     if (!stitchId || !imageUrl) {
         return res.status(400).json({ error: 'stitchId and imageUrl are required' });
     }
