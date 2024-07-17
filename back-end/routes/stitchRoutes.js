@@ -56,7 +56,7 @@ router.get('/title/:stitchId', async (req, res) => {
 });
 
 router.post('/create', async (req, res) => {
-    const { title, username, mood, dance, mix, explore } = req.body
+    const { title, username, mood, dance, mix, explore, imageUrl } = req.body
 
     const user = await prisma.user.findUnique({
         where: {
@@ -64,14 +64,19 @@ router.post('/create', async (req, res) => {
         }
     })
 
+    const totalPreferences = mood + dance + mix;
+    const moodWeight = mood / totalPreferences;
+    const danceWeight = dance / totalPreferences;
+    const mixWeight = 1 - (moodWeight + danceWeight);
+
     const newStitch = await prisma.stitch.create({
         data: {
             title,
             duration: 0,
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Image_not_available.png/640px-Image_not_available.png',
-            mood,
-            dance,
-            mix,
+            imageUrl,
+            mood: moodWeight,
+            dance: danceWeight,
+            mix: mixWeight,
             explore,
             userId: user.id
         }

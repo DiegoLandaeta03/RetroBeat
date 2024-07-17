@@ -11,7 +11,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
     const audioRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
 
-    const handlePlay = () => {
+    const handleAudioPlay = () => {
         if (audioRef.current) {
             onPlay(audioRef.current);
         }
@@ -79,7 +79,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
             <Box ml="auto" textAlign="center" display="flex" alignItems="center" position="relative">
                 <Box mr={2}>
                     {preview_url ? (
-                        <audio ref={audioRef} controls style={{ width: '15em' }} onPlay={handlePlay}>
+                        <audio ref={audioRef} controls style={{ width: '15em' }} onPlay={handleAudioPlay}>
                             <source src={preview_url} type="audio/mpeg" />
                         </audio>
                     ) : (

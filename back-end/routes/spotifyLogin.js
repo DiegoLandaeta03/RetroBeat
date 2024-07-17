@@ -51,14 +51,14 @@ router.post('/exchange_code', (req, res) => {
         if (response.statusCode !== 200) {
             return res.status(response.statusCode).json({ error: body });
         }
-        res.json({ access_token: body.access_token });
+        res.json({ accessToken: body.access_token });
     });
 });
 
 router.get('/token', (req, res) => {
     res.json(
         {
-            access_token: access_token
+            accessToken: accessToken
         })
 })
 

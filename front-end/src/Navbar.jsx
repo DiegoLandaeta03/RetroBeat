@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import noImage from './assets/Image_not_available.png';
 import {
     Box,
     Flex,
@@ -48,7 +49,7 @@ function Navbar({ username, page }) {
     }
 
 
-    const handleHome = () => {
+    const handleNavigateToHome = () => {
         navigate(`/${username}`);
     };
 
@@ -60,7 +61,7 @@ function Navbar({ username, page }) {
         closeModal();
     };
 
-    const handleSubmit = async () => {
+    const handlePreferenceSubmit = async () => {
         const stitchId = await createStitch({ moodValue, danceValue, mixValue, exploreValue });
         handleModalClose();
         navigate(`/${username}/create`, { state: { stitchId } });
@@ -79,7 +80,8 @@ function Navbar({ username, page }) {
                     mood: values.moodValue / 100,
                     dance: values.danceValue / 100,
                     mix: values.mixValue / 100,
-                    explore: values.exploreValue / 100
+                    explore: values.exploreValue / 100,
+                    imageUrl: noImage
                 })
             });
             const data = await response.json();
@@ -98,11 +100,11 @@ function Navbar({ username, page }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    token: localStorage.getItem('access_token')
+                    token: localStorage.getItem('accessToken')
                 })
             });
 
-            localStorage.removeItem('access_token');
+            localStorage.removeItem('accessToken');
             navigate('/');
         } catch (error) {
             alert('Failed to logout');
@@ -156,7 +158,7 @@ function Navbar({ username, page }) {
                         <MenuItem
                             style={{ margin: 0 }}
                             icon={<SunIcon />}
-                            onClick={handleHome}
+                            onClick={handleNavigateToHome}
                             color={'black'}
                             _hover={{
                                 bg: 'linear-gradient(0deg, rgba(115, 41, 123, 0.9) 10%, rgba(83, 41, 140, 0.9) 100%)',
@@ -316,7 +318,7 @@ function Navbar({ username, page }) {
                                     </Box>
                                 </ModalBody>
                                 <ModalFooter display="flex" justifyContent="center">
-                                    <Button onClick={handleSubmit}>Submit</Button>
+                                    <Button onClick={handlePreferenceSubmit}>Submit</Button>
                                     <Button onClick={handleModalClose} ml={3}>Close</Button>
                                 </ModalFooter>
                             </ModalContent>
