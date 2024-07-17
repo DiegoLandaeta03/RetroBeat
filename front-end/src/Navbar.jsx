@@ -61,7 +61,6 @@ function Navbar({ username, page }) {
     };
 
     const handleSubmit = async () => {
-        console.log('Form submitted with values:', { moodValue, danceValue, mixValue, exploreValue });
         const stitchId = await createStitch({ moodValue, danceValue, mixValue, exploreValue });
         handleModalClose();
         navigate(`/${username}/create`, { state: { stitchId } });
