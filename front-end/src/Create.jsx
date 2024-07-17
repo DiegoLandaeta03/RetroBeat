@@ -4,6 +4,7 @@ import { Box, Input, FormControl, Heading, Button, Text } from '@chakra-ui/react
 import Navbar from './Navbar';
 import Song from './Song';
 import CustomName from './CustomName';
+import noImage from './assets/Image_not_available.png';
 
 function Create() {
     const params = useParams();
@@ -12,11 +13,11 @@ function Create() {
     const username = params.username;
     const [searchOptions, setSearchOptions] = useState([]);
     const [currentStitchSongs, setCurrentStitchSongs] = useState([]);
+    const [recommendedSongs, setRecommendedSongs] = useState([]);
     const [currentAudio, setCurrentAudio] = useState(null);
     const stitchId = location.state.stitchId;
     const [deleteId, setDeleteId] = useState('');
-
-
+    
     const handleSearch = (event) => {
         const song = event.target.value;
 
@@ -30,10 +31,10 @@ function Create() {
 
     const searchSongs = async (song) => {
         try {
-            const access_token = localStorage.getItem('access_token');
+            const accessToken = localStorage.getItem('accessToken');
             const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(song)}&type=track`, {
                 headers: {
-                    'Authorization': `Bearer ${access_token}`
+                    'Authorization': `Bearer ${accessToken}`
                 }
             });
             const searchData = await response.json();
@@ -43,7 +44,7 @@ function Create() {
         }
     };
 
-    const handlePlay = (audioElement) => {
+    const handleAudioPlay = (audioElement) => {
         if (currentAudio && currentAudio !== audioElement) {
             currentAudio.pause();
             currentAudio.currentTime = 0;
@@ -65,7 +66,7 @@ function Create() {
         }
     };
 
-    const handleAdd = (track) => {
+    const handleAddSong = (track) => {
         const { uri, name, artists, album, duration_ms, preview_url, popularity } = track;
 
         try {
@@ -97,15 +98,26 @@ function Create() {
         }
     }
 
+    const getRecommendedSongs = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/recommendation/${stitchId}`);
+            const recommendedSongs = await response.json();
+            setRecommendedSongs(recommendedSongs);
+        } catch (error) {
+            console.error('Error getting songs in stitch:', error);
+        }
+    }
+
     const getStitchSongs = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/song/${stitchId}`);
             const stitchSongs = await response.json();
             if (stitchSongs.length != 0) {
-                const topSongImage = stitchSongs[0].album.images[0].url
-                updateImage(topSongImage)
+                const topSongImage = stitchSongs[0].album.images[0].url;
+                updateImage(topSongImage);
+                getRecommendedSongs();
             } else {
-                updateImage('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Image_not_available.png/640px-Image_not_available.png')
+                updateImage(noImage);
             }
             setCurrentStitchSongs(stitchSongs);
         } catch (error) {
@@ -169,9 +181,23 @@ function Create() {
                                 <Song
                                     key={track.id}
                                     track={track}
-                                    onPlay={handlePlay}
+                                    onPlay={handleAudioPlay}
                                     location="addSongs"
-                                    onAdd={() => handleAdd(track)}
+                                    onAdd={() => handleAddSong(track)}
+                                />
+                            ))}
+                        </Box>
+
+                        <Heading as='h3' size='md' mt='1em'>Recommended</Heading>
+
+                        <Box width='30em' mt='1em'>
+                            {recommendedSongs.slice(0, 5).map((track) => (
+                                <Song
+                                    key={track.id}
+                                    track={track}
+                                    onPlay={handleAudioPlay}
+                                    location="addSongs"
+                                    onAdd={() => handleAddSong(track)}
                                 />
                             ))}
                         </Box>
@@ -202,7 +228,7 @@ function Create() {
                                 <Song
                                     key={song.id}
                                     track={song}
-                                    onPlay={handlePlay}
+                                    onPlay={handleAudioPlay}
                                     location="currentStitch"
                                     onRemove={() => handleRemove(song.id)}
                                 />

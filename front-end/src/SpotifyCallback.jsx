@@ -29,7 +29,7 @@ function SpotifyCallback() {
                 throw new Error('Failed to exchange code for token');
             }
             const data = await response.json();
-            localStorage.setItem('access_token', data.access_token)
+            localStorage.setItem('accessToken', data.accessToken)
             createUser();
         } catch (error) {
             console.error('Error:', error);
@@ -38,7 +38,7 @@ function SpotifyCallback() {
     };
 
     function createUser() {
-        const accessToken = localStorage.getItem('access_token');
+        const accessToken = localStorage.getItem('accessToken');
         if (accessToken) {
             fetch('https://api.spotify.com/v1/me', {
                 method: 'GET',
@@ -50,7 +50,7 @@ function SpotifyCallback() {
                 .then(result => {
                     const email = result.email
                     const username = result.id
-                    const token = localStorage.getItem('access_token')
+                    const token = localStorage.getItem('accessToken')
                     fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/login`,
                         {
                             method: "POST",
