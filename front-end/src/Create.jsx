@@ -1,6 +1,6 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Box, Input, FormControl, Heading, Button, Text } from '@chakra-ui/react';
+import { Box, Input, FormControl, Heading, Button, Text, useToast, Tooltip } from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Song from './Song';
 import CustomName from './CustomName';
@@ -9,6 +9,7 @@ import noImage from './assets/Image_not_available.png';
 function Create() {
     const params = useParams();
     const location = useLocation();
+    const toast = useToast();
     const navigate = useNavigate();
     const username = params.username;
     const [searchOptions, setSearchOptions] = useState([]);
@@ -17,7 +18,8 @@ function Create() {
     const [currentAudio, setCurrentAudio] = useState(null);
     const stitchId = location.state.stitchId;
     const [deleteId, setDeleteId] = useState('');
-    
+    const [nextAllowedRequestTime, setNextAllowedRequestTime] = useState(Date.now());
+
     const handleSearch = (event) => {
         const song = event.target.value;
 
@@ -99,10 +101,34 @@ function Create() {
     }
 
     const getRecommendedSongs = async () => {
+        await getStitchSongs();
+        if (currentStitchSongs.length == 0) {
+            toast({
+                description: "Please add your first song to receive recommendations!",
+                status: "info",
+                duration: 3000,
+                isClosable: true,
+                position: "bottom"
+            });
+            return;
+        }
+
+        const currentTime = Date.now();
+        if (currentTime < nextAllowedRequestTime) {
+            toast({
+                description: "Please wait 15 seconds before requesting recommendations again.",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+                position: "bottom"
+            });
+            return;
+        }
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/recommendation/${stitchId}`);
             const recommendedSongs = await response.json();
             setRecommendedSongs(recommendedSongs);
+            setNextAllowedRequestTime(currentTime + 15000);
         } catch (error) {
             console.error('Error getting songs in stitch:', error);
         }
@@ -115,7 +141,6 @@ function Create() {
             if (stitchSongs.length != 0) {
                 const topSongImage = stitchSongs[0].album.images[0].url;
                 updateImage(topSongImage);
-                getRecommendedSongs();
             } else {
                 updateImage(noImage);
             }
@@ -176,7 +201,7 @@ function Create() {
                             </FormControl>
                         </Box>
 
-                        <Box width='30em'>
+                        <Box width='30em' mb='1em'>
                             {searchOptions.slice(0, 3).map((track) => (
                                 <Song
                                     key={track.id}
@@ -188,7 +213,22 @@ function Create() {
                             ))}
                         </Box>
 
-                        <Heading as='h3' size='md' mt='1em'>Recommended</Heading>
+                        <Button
+                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                            color="white"
+                            width="14em"
+                            _focus={{ boxShadow: 'none' }}
+                            _active={{ boxShadow: 'none' }}
+                            _hover={{
+                                opacity: 1,
+                                backgroundSize: 'auto',
+                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                            }}
+                            onClick={getRecommendedSongs}
+                        >
+                            <Text fontSize="lg">Get Recommendations</Text>
+                        </Button>
 
                         <Box width='30em' mt='1em'>
                             {recommendedSongs.slice(0, 5).map((track) => (

@@ -20,11 +20,6 @@
     height: 3em;
 }
 
-#songDetails {
-    margin-left: 1em;
-    flex: 1; 
-}
-
 #songName,
 #artist,
 #album {

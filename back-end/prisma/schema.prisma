@@ -30,7 +30,7 @@ model Token {
 }
 
 model Stitch {
-  id          Int  @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   duration    Int
   imageUrl    String
@@ -39,8 +39,9 @@ model Stitch {
   dance       Float
   mix         Float
   explore     Float
-  User        User  @relation(fields: [userId], references: [id])
+  User        User    @relation(fields: [userId], references: [id])
   userId      Int
+  spotifyId   String? @default("")
 }
 
 model Song {

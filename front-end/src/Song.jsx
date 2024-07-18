@@ -39,7 +39,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
             maxWidth="600px"
         >
             <Image className="songImage" src={album.images[0].url} alt="Song Image" width="4em" height="3em" />
-            <Box id="songDetails" ml="1em" flex="1">
+            <Box id="songDetails" ml="1em">
                 <Text
                     id="songName"
                     fontSize="0.8em"

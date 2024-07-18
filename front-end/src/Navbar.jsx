@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import noImage from './assets/Image_not_available.png';
 import {
     Box,
@@ -25,13 +25,16 @@ import {
     SliderTrack,
     SliderFilledTrack,
     Tooltip,
-    SliderThumb
+    SliderThumb,
+    SimpleGrid,
+    Image
 } from "@chakra-ui/react";
 import { HamburgerIcon, LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
 
 function Navbar({ username, page }) {
     const navigate = useNavigate();
-    const { isOpen, onOpen, onClose: closeModal } = useDisclosure();
+    const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: closePreferenceModal } = useDisclosure();
+    const { isOpen: isProfileOpen, onOpen: onProfileOpen, onClose: onProfileClose } = useDisclosure();
     const [moodValue, setMoodValue] = useState(50);
     const [danceValue, setDanceValue] = useState(50);
     const [mixValue, setMixValue] = useState(50);
@@ -40,6 +43,8 @@ function Navbar({ username, page }) {
     const [showDanceValue, setShowDance] = useState(false);
     const [showMixValue, setShowMix] = useState(false);
     const [showExploreValue, setShowExplore] = useState(false);
+    const [profileData, setProfileData] = useState(null);
+    const [userTopTracks, setUserTopTracks] = useState(null);
 
     const labelStyles = {
         mt: '2',
@@ -48,22 +53,67 @@ function Navbar({ username, page }) {
         color: 'black'
     }
 
+    const fetchProfileData = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            console.error('Access token not available.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.spotify.com/v1/me`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch profile data');
+            }
+            const data = await response.json();
+            setProfileData(data);
+        } catch (error) {
+            console.error('Error fetching profile data:', error);
+        }
+    };
+
+    const fetchTopUserTracks = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            console.error('Access token not available.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.spotify.com/v1/me/top/tracks`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch profile data');
+            }
+            const data = await response.json();
+            setUserTopTracks(data.items);
+        } catch (error) {
+            console.error('Error fetching profile data:', error);
+        }
+    };
 
     const handleNavigateToHome = () => {
         navigate(`/${username}`);
     };
 
-    const handleModalClose = () => {
+    const handlePreferenceModalClose = () => {
         setMoodValue(50);
         setDanceValue(50);
         setMixValue(50);
         setExploreValue(50);
-        closeModal();
+        closePreferenceModal();
     };
 
     const handlePreferenceSubmit = async () => {
         const stitchId = await createStitch({ moodValue, danceValue, mixValue, exploreValue });
-        handleModalClose();
+        handlePreferenceModalClose();
         navigate(`/${username}/create`, { state: { stitchId } });
     };
 
@@ -111,6 +161,11 @@ function Navbar({ username, page }) {
         }
     };
 
+    useEffect(() => {
+        fetchProfileData();
+        fetchTopUserTracks();
+    }, []);
+
     return (
         <Box w="100%" color="white" p={4} mx="auto" paddingTop='2em' paddingBottom='2em' bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)" paddingLeft='0'>
             <Flex align="center">
@@ -119,6 +174,7 @@ function Navbar({ username, page }) {
                 </Heading>
 
                 <Button
+                    onClick={onProfileOpen}
                     className="profileIcon"
                     bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
                     color="white"
@@ -135,6 +191,50 @@ function Navbar({ username, page }) {
                 >
                     <Text fontSize="lg">{username}</Text>
                 </Button>
+
+                <Modal isOpen={isProfileOpen} onClose={onProfileClose} size='lg' motionPreset='slideInTop' isCentered>
+                    <ModalOverlay backdropFilter='auto' backdropBlur='2px' />
+                    <ModalContent>
+                        <ModalHeader color='black' textAlign='center'>
+                            <Heading as='h2' size='xl'>About You</Heading>
+                        </ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                            {profileData && userTopTracks ? (
+                                <Box>
+                                    <Box display='flex' justifyContent='space-evenly'>
+                                        <Box flex='1' textAlign='center'>
+                                            <Text color='black'>
+                                                <span style={{ fontWeight: 'bold' }}>Username:</span> {profileData.display_name}
+                                            </Text>
+                                        </Box>
+                                        <Box flex='1' textAlign='center'>
+                                            <Text color='black'>
+                                                <span style={{ fontWeight: 'bold' }}>Total Followers:</span> {profileData.followers.total}
+                                            </Text>
+                                        </Box>
+                                    </Box>
+                                    <Box textAlign='center' mt='1em'>
+                                        <Text color='black' fontWeight='bold'>Top Songs</Text>
+                                    </Box>
+                                    <Box display='flex' justifyContent='space-evenly'>
+                                        <SimpleGrid columns={2} spacing={4} p={2}>
+                                            {userTopTracks.slice(0, 4).map((song) => (
+                                                <Box key={song.id} textAlign='center' width='12em'>
+                                                    <Image src={song.album.images[0].url} alt='Song Image' boxSize='12em' objectFit='cover' />
+                                                    <Text color='black' fontWeight='bold' isTruncated>{song.name}</Text>
+                                                    <Text color='black' isTruncated>by {song.artists[0].name}</Text>
+                                                </Box>
+                                            ))}
+                                        </SimpleGrid>
+                                    </Box>
+                                </Box>
+                            ) : (
+                                <Text color='black'>Loading profile data...</Text>
+                            )}
+                        </ModalBody>
+                    </ModalContent>
+                </Modal>
 
                 <Menu>
                     <MenuButton
@@ -174,7 +274,7 @@ function Navbar({ username, page }) {
                         <MenuItem
                             style={{ margin: 0 }}
                             icon={<AddIcon />}
-                            onClick={onOpen}
+                            onClick={onCreateOpen}
                             color={'black'}
                             _hover={{
                                 bg: 'linear-gradient(0deg, rgba(115, 41, 123, 0.9) 10%, rgba(83, 41, 140, 0.9) 100%)',
@@ -188,16 +288,17 @@ function Navbar({ username, page }) {
                             <Text fontSize="lg">Create Stitch</Text>
                         </MenuItem>
 
-                        <Modal size="xl" onClose={handleModalClose} isOpen={isOpen} motionPreset='slideInBottom' isCentered>
+                        <Modal size="xl" onClose={handlePreferenceModalClose} isOpen={isCreateOpen} motionPreset='slideInBottom' isCentered>
                             <ModalOverlay backdropFilter='auto' backdropBlur='2px' />
                             <ModalContent>
-                                <ModalHeader color="black" textAlign="center">
-                                    Stitch Preferences
+                                <ModalHeader textAlign="center">
+                                    <Heading color='black'>Stitch Preferences</Heading>
+                                    <Text color='gray.700' fontSize='sm' mt='1.5em'>Answer the following questions so we can give you personalized recommendations!</Text>
                                 </ModalHeader>
                                 <ModalCloseButton />
                                 <ModalBody textAlign="center">
                                     <Text color='black' as='b'>Mood</Text>
-                                    <Box p={4} pt={7} mb='2em'>
+                                    <Box p={2} pt={7} mb='1em'>
                                         <Slider aria-label='slider-ex-6'
                                             onChange={(val) => setMoodValue(val)}
                                             onMouseEnter={() => setShowMood(true)}
@@ -225,9 +326,10 @@ function Navbar({ username, page }) {
                                                 <SliderThumb />
                                             </Tooltip>
                                         </Slider>
+                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is consistent mood in your stitch? 100% = consistent 🙂.</Text>
                                     </Box>
                                     <Text color='black' as='b'>Danceability</Text>
-                                    <Box p={4} pt={7} mb='2em'>
+                                    <Box p={2} pt={7} mb='1em'>
                                         <Slider aria-label='slider-ex-6'
                                             onChange={(val) => setDanceValue(val)}
                                             onMouseEnter={() => setShowDance(true)}
@@ -255,9 +357,10 @@ function Navbar({ username, page }) {
                                                 <SliderThumb />
                                             </Tooltip>
                                         </Slider>
+                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is dancing in your stitch? 100% = dance party 🕺.</Text>
                                     </Box>
                                     <Text color='black' as='b'>Mixability</Text>
-                                    <Box p={4} pt={7} mb='2em'>
+                                    <Box p={2} pt={7} mb='1em'>
                                         <Slider aria-label='slider-ex-6'
                                             onChange={(val) => setMixValue(val)}
                                             onMouseEnter={() => setShowMix(true)}
@@ -285,9 +388,10 @@ function Navbar({ username, page }) {
                                                 <SliderThumb />
                                             </Tooltip>
                                         </Slider>
+                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is the mixability of your stitch? 100% = DJ level 🎧.</Text>
                                     </Box>
                                     <Text color='black' as='b'>Explore</Text>
-                                    <Box p={4} pt={7}>
+                                    <Box p={2} pt={7}>
                                         <Slider aria-label='slider-ex-6'
                                             onChange={(val) => setExploreValue(val)}
                                             onMouseEnter={() => setShowExplore(true)}
@@ -315,11 +419,12 @@ function Navbar({ username, page }) {
                                                 <SliderThumb />
                                             </Tooltip>
                                         </Slider>
+                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is finding music you haven't listened to? 100% = explorer 🧭.</Text>
                                     </Box>
                                 </ModalBody>
                                 <ModalFooter display="flex" justifyContent="center">
                                     <Button onClick={handlePreferenceSubmit}>Submit</Button>
-                                    <Button onClick={handleModalClose} ml={3}>Close</Button>
+                                    <Button onClick={handlePreferenceModalClose} ml={3}>Close</Button>
                                 </ModalFooter>
                             </ModalContent>
                         </Modal>
