@@ -58,7 +58,7 @@ function Home() {
                     <Heading as='h2' size='2xl'>Your Stitches</Heading>
                 </Box>
                 {stitches && (
-                    <SimpleGrid spacing={4} p={10} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
+                    <SimpleGrid spacing={6} p={7} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
                         {stitches.map((stitch) => (
                             <Stitch key={stitch.id} stitch={stitch} username={username} deleteStitch={deleteStitch}/>
                         ))}

@@ -1,5 +1,5 @@
 import { Heading, Box, Flex, Image, Text, IconButton } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons'
+import { MinusIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,25 @@ function Stitch({ stitch, username, deleteStitch }) {
 
     const handleEdit = (stitchId) => () => {
         navigate(`/${username}/create`, { state: { stitchId } });
+    };
+
+    const handleShareToSpotify = () => (event) => {
+        event.stopPropagation();
+        exportToSpotify(stitch.id);
+    };
+
+    const exportToSpotify = async (stitchId) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/exportToSpotify`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stitchId })
+            });
+        } catch (error) {
+            console.error('Error exportin stitch to Spotify:', error);
+        }
     };
 
     return (
@@ -43,14 +62,15 @@ function Stitch({ stitch, username, deleteStitch }) {
                 <Flex align="center">
                     <Text fontSize='sm' color='black' mr={2}>Created by {username}</Text>
                     {isHovered && (
-                        <IconButton
-                            icon={<DeleteIcon />}
+                        <Box>
+                            <IconButton
+                            icon={<MinusIcon />}
                             onClick={deleteStitch(stitch.id)}
                             position="absolute"
                             right={2}
-                            bottom={2}
-                            bg="black"
-                            color="white"
+                            top={2}
+                            bg="white"
+                            color="black"
                             _focus={{ boxShadow: 'none' }}
                             _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
                             _hover={{
@@ -58,6 +78,23 @@ function Stitch({ stitch, username, deleteStitch }) {
                                 backgroundSize: 'auto',
                                 transform: 'translate3d(0, -0.5px, 0) scale(1.01)'
                             }}/>
+                            <IconButton
+                            icon={<ExternalLinkIcon />}
+                            onClick={handleShareToSpotify()}
+                            position="absolute"
+                            right={2}
+                            bottom={2}
+                            bg="white"
+                            color="black"
+                            size="lg"
+                            _focus={{ boxShadow: 'none' }}
+                            _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                            _hover={{
+                                opacity: 1,
+                                backgroundSize: 'auto',
+                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)'
+                            }}/>
+                        </Box>
                     )}
                 </Flex>
             </Box>

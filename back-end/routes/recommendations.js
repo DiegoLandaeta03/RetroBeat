@@ -21,7 +21,7 @@ const getAccessToken = async (userId) => {
 const fetchAudioFeatures = async (songs, accessToken) => {
     const songIds = songs.map(song => (song.uri).split(':').pop());
     const stringOfIds = songIds.join(',');
-    
+
     try {
         const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${encodeURIComponent(stringOfIds)}`, {
             headers: {
@@ -73,7 +73,7 @@ async function fetchAndProcessAudioFeatures(songs, accessToken) {
     };
 }
 
-function tonalityScore(lastSongFeatures, currentSongFeatures) {
+function getTonalityScore(lastSongFeatures, currentSongFeatures) {
     const lastSongKey = lastSongFeatures.key;
     const lastSongMode = lastSongFeatures.mode;
     const currentSongKey = currentSongFeatures.key;
@@ -86,7 +86,7 @@ function tonalityScore(lastSongFeatures, currentSongFeatures) {
 
     // Transtion up or down in current circle on Camelot System (ex: D-flat minor to A-flat minor or F-sharp minor)
     if (lastSongMode == currentSongMode) {
-        if (currentSongKey == (lastSongKey + 5) % 12 || currentSongKey == ((lastSongMode - 5) % 12 + 12) % 12) {
+        if (currentSongKey == (lastSongKey + 5) % 12 || currentSongKey == ((lastSongKey - 5) % 12 + 12) % 12) {
             return 1;
         }
         return 0;
@@ -95,12 +95,11 @@ function tonalityScore(lastSongFeatures, currentSongFeatures) {
     // Moving either to inside or outside circle on Camelot System (ex: A-flat major to F-minor)
     if (lastSongMode == 0) {
         if (currentSongMode == 1 && currentSongKey == (lastSongKey + 3) % 12) {
-            return 1;
+            return 0.75;
         }
-    }
-    else {
-        if (currentSongMode == 0 && currentSongKey == ((lastSongMode - 3) % 12 + 12) % 12) {
-            return 1;
+    } else {
+        if (currentSongMode == 0 && currentSongKey == ((lastSongKey - 3) % 12 + 12) % 12) {
+            return 0.5;
         }
     }
 
@@ -118,7 +117,7 @@ function gradingAlgorithm(lastSongFeatures, recommendationAudioFeatures, stitchA
             const totalMoodScore = (valenceScore + energyScore + instrumentScore) / 3;
             const danceScore = feature.danceability;
             const tempoScore = 1 - Math.abs(lastSongFeatures.tempo - feature.tempo) / lastSongFeatures.tempo;
-            const toneScore = tonalityScore(lastSongFeatures, feature);
+            const toneScore = getTonalityScore(lastSongFeatures, feature);
             const totalMixScore = (tempoScore + toneScore) / 2;
             const totalScore = (totalMoodScore * moodWeight) + (danceScore * danceWeight) + (totalMixScore * mixWeight)
             scores.set(recommendId, totalScore);
@@ -143,14 +142,21 @@ const fetchRecommendations = async (songs, accessToken, exploreWeight) => {
                 'Authorization': `Bearer ${accessToken}`
             }
         });
-        if (response.statusCode !== 200) {
-            return (response.statusCode).json({ error: body });
+
+        if (!response.ok) {
+            if (response.status === 429) {
+                const retryAfter = response.headers.get('Retry-After');
+                console.error(`Rate limit exceeded. Retry after ${retryAfter} seconds.`);
+                return null;
+            }
+            throw new Error(`API request failed with status ${response.status}`);
         }
         const recommendData = await response.json();
         const trackRecommendations = recommendData.tracks;
         return trackRecommendations;
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching recommendations:', error);
+        return null;
     }
 };
 
@@ -199,13 +205,18 @@ router.get('/:stitchId', async (req, res) => {
         }
 
         const recommendationTracks = await fetchRecommendations(stitch.songs, accessToken, stitch.explore);
+
+        if (stitch.mood == 0 && stitch.dance == 0 && stitch.mix == 0) {
+            return res.status(200).json(recommendationTracks);
+        }
+
         const { lastSongFeatures, stitchAverages } = await fetchAndProcessAudioFeatures(stitch.songs, accessToken);
         const recommendationAudioFeatures = await fetchAudioFeatures(recommendationTracks, accessToken);
         const rankedRecommendationIds = gradingAlgorithm(lastSongFeatures, recommendationAudioFeatures, stitchAverages, stitch.mood, stitch.dance, stitch.mix);
         const userRecommendedTracks = await fetchRankedTracks(rankedRecommendationIds, accessToken);
         res.status(200).json(userRecommendedTracks);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve stitch songs.' });
+        res.status(500).json({ error: 'Failed to retrieve recommended songs.' });
     }
 });
 
