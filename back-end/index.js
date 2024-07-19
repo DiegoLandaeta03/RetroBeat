@@ -8,6 +8,7 @@ const spotifyLogin = require('./routes/spotifyLogin')
 const stitch = require('./routes/stitchRoutes')
 const song = require('./routes/songRoutes')
 const recommendation = require('./routes/recommendations')
+const clusters = require('./routes/clusters')
 
 app.use(cors())
 app.use(express.json())
@@ -16,6 +17,7 @@ app.use('/', login)
 app.use('/stitch', stitch)
 app.use('/song', song)
 app.use('/recommendation', recommendation)
+app.use('/clusters', clusters)
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`)
