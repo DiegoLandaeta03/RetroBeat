@@ -1,6 +1,6 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Box, Input, FormControl, Heading, Button, Text, useToast, Tooltip } from '@chakra-ui/react';
+import { Box, Input, FormControl, Heading, Button, Text, useToast } from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Song from './Song';
 import CustomName from './CustomName';
@@ -159,6 +159,10 @@ function Create() {
         navigate(`/${username}`);
     };
 
+    const handleToVisualization = () => {
+        navigate(`/${username}/visualization`);
+    }
+
     useEffect(() => {
         if (deleteId) {
             fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/song/${deleteId}`, {
@@ -242,7 +246,7 @@ function Create() {
                             ))}
                         </Box>
                     </Box>
-                    <Box mt="2em">
+                    <Box mt="2em" display='flex' flexDirection='column' alignItems='center'>
                         <Button
                             className="finalizeStitch"
                             bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
@@ -259,6 +263,24 @@ function Create() {
                             onClick={finalizeStitch}
                         >
                             <Text fontSize="lg">Finalize Stitch</Text>
+                        </Button>
+                        <Button
+                            className="navigateToVisualization"
+                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                            color="white"
+                            width="11em"
+                            mt="1em"
+                            _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                            _active={{ boxShadow: 'none' }}
+                            _hover={{
+                                opacity: 1,
+                                backgroundSize: 'auto',
+                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                            }}
+                            onClick={handleToVisualization}
+                        >
+                            <Text fontSize="lg">View Visualization</Text>
                         </Button>
                     </Box>
                     <Box className="stitchSection" color="white" minHeight="100vh" display="flex" flexDirection="column" alignItems="center" flex="1" mt="2em">
