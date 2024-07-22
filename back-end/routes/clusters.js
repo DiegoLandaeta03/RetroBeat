@@ -198,7 +198,6 @@ router.get('/:stitchId', async (req, res) => {
         const numClusters = Math.ceil(stitch.songs.length / 3);
         const clusteringResult = kMeans(valenceFeatures, numClusters);
         const clustersWithTrackInfo = await addClusterToSong(stitch.songs, clusteringResult);
-        
         res.status(200).json(clustersWithTrackInfo);
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve clusters.' });

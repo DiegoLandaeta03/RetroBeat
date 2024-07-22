@@ -3,7 +3,7 @@ import Create from './Create';
 import SpotifyLogin from './SpotifyLogin';
 import SpotifyCallback from './SpotifyCallback';
 import Visualization from './visualization/Visualization';
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
