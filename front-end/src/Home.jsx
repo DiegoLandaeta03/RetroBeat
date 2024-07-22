@@ -4,6 +4,7 @@ import { Heading, Box, SimpleGrid } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Stitch from './Stitch';
+import Footer from './Footer';
 
 function Home() {
     const params = useParams();
@@ -49,7 +50,7 @@ function Home() {
     }, [deleteId, username]);
 
     return (
-        <div className='Home'>
+        <Box className='Home' display='flex' flexDirection='column' minHeight='100vh'>
             <header>
                 <Navbar username={username} page={"home"} />
             </header>
@@ -65,7 +66,10 @@ function Home() {
                     </SimpleGrid>
                 )}
             </main>
-        </div>
+            <footer>
+                <Footer />
+            </footer>
+        </Box>
     );
 }
 

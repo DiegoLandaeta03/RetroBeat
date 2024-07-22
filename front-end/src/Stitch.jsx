@@ -1,5 +1,5 @@
-import { Heading, Box, Flex, Image, Text, IconButton } from '@chakra-ui/react';
-import { MinusIcon, ExternalLinkIcon } from '@chakra-ui/icons'
+import { Heading, Box, Flex, Image, Text, IconButton, Tooltip } from '@chakra-ui/react';
+import { DeleteIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,37 +63,41 @@ function Stitch({ stitch, username, deleteStitch }) {
                     <Text fontSize='sm' color='black' mr={2}>Created by {username}</Text>
                     {isHovered && (
                         <Box>
+                            <Tooltip label='Delete from library' placement='bottom'>
                             <IconButton
-                            icon={<MinusIcon />}
-                            onClick={deleteStitch(stitch.id)}
-                            position="absolute"
-                            right={2}
-                            top={2}
-                            bg="white"
-                            color="black"
-                            _focus={{ boxShadow: 'none' }}
-                            _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
-                            _hover={{
-                                opacity: 1,
-                                backgroundSize: 'auto',
-                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)'
-                            }}/>
-                            <IconButton
-                            icon={<ExternalLinkIcon />}
-                            onClick={handleShareToSpotify()}
-                            position="absolute"
-                            right={2}
-                            bottom={2}
-                            bg="white"
-                            color="black"
-                            size="lg"
-                            _focus={{ boxShadow: 'none' }}
-                            _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
-                            _hover={{
-                                opacity: 1,
-                                backgroundSize: 'auto',
-                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)'
-                            }}/>
+                                icon={<DeleteIcon />}
+                                onClick={deleteStitch(stitch.id)}
+                                position="absolute"
+                                right={2}
+                                top={2}
+                                bg="white"
+                                color="black"
+                                _focus={{ boxShadow: 'none' }}
+                                _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                                _hover={{
+                                    opacity: 1,
+                                    backgroundSize: 'auto',
+                                    transform: 'translate3d(0, -0.5px, 0) scale(1.01)'
+                                }} />
+                            </Tooltip>
+                            <Tooltip label='Export to Spotify' placement='bottom'>
+                                <IconButton
+                                    icon={<ExternalLinkIcon />}
+                                    onClick={handleShareToSpotify()}
+                                    position="absolute"
+                                    right={2}
+                                    bottom={2}
+                                    bg="white"
+                                    color="black"
+                                    size="lg"
+                                    _focus={{ boxShadow: 'none' }}
+                                    _active={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                                    _hover={{
+                                        opacity: 1,
+                                        backgroundSize: 'auto',
+                                        transform: 'translate3d(0, -0.5px, 0) scale(1.01)'
+                                    }} />
+                            </Tooltip>
                         </Box>
                     )}
                 </Flex>

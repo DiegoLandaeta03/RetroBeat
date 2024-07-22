@@ -3,8 +3,8 @@ import { Box } from '@chakra-ui/react';
 const Edge = ({ from, to, color }) => {
     const startX = from.x + 25;
     const startY = from.y + 25;
-    const endX = to.x + 25; 
-    const endY = to.y + 25;
+    const endX = to.x; 
+    const endY = to.y;
 
     const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
     const length = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
