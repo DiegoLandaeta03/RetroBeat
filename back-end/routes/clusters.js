@@ -21,7 +21,6 @@ const fetchAudioFeatures = async (songs, accessToken) => {
         const audioData = await response.json();
         return audioData.audio_features;
     } catch (error) {
-        console.error(error);
         return [];
     }
 };

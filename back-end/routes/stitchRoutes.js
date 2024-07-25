@@ -50,7 +50,6 @@ router.get('/title/:stitchId', async (req, res) => {
 
         res.status(200).json({ title: stitch.title });
     } catch (error) {
-        console.error('Error retrieving stitch:', error);
         res.status(500).json({ error: 'Failed to retrieve stitch.' });
     }
 });
@@ -113,7 +112,6 @@ router.patch('/title', async (req, res) => {
         });
         res.json(updatedStitch);
     } catch (error) {
-        console.error('Error updating stitch:', error);
         res.status(500).json({ error: 'Failed to update stitch.' });
     }
 });
@@ -136,7 +134,6 @@ router.patch('/image', async (req, res) => {
         });
         res.json(updatedStitch);
     } catch (error) {
-        console.error('Error updating stitch:', error);
         res.status(500).json({ error: 'Failed to update stitch.' });
     }
 });
@@ -179,7 +176,6 @@ router.patch('/exportToSpotify', async (req, res) => {
 
         res.json({ message: 'Exported to Spotify successfully', playlistId });
     } catch (error) {
-        console.error('Error exporting to Spotify:', error);
         res.status(500).json({ error: 'Failed to export to Spotify.' });
     }
 });
@@ -211,7 +207,6 @@ router.delete('/:id', async (req, res) => {
                     }
 
                 } catch (error) {
-                    console.error('Error deleting song:', error);
                     throw error;
                 }
             });
@@ -225,7 +220,6 @@ router.delete('/:id', async (req, res) => {
 
         res.status(200).json(deletedStitch);
     } catch (error) {
-        console.error('Error deleting stitch and songs:', error);
         res.status(500).json({ error: 'Failed to delete stitch and associated songs.' });
     }
 });
