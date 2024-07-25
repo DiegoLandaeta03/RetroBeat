@@ -1,4 +1,4 @@
-import { Heading, Box, Flex, Image, Text, IconButton, Tooltip } from '@chakra-ui/react';
+import { Heading, Box, Flex, Image, Text, IconButton, Tooltip, useToast } from '@chakra-ui/react';
 import { DeleteIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 function Stitch({ stitch, username, deleteStitch }) {
     const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
+    const toast = useToast();
 
     const handleEdit = (stitchId) => () => {
         navigate(`/${username}/create`, { state: { stitchId } });
@@ -26,7 +27,15 @@ function Stitch({ stitch, username, deleteStitch }) {
                 body: JSON.stringify({ stitchId, username })
             });
         } catch (error) {
-            console.error('Error exportin stitch to Spotify:', error);
+            toast({
+                title: "Error",
+                description: "Failed to export stitch to Spotify",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
         }
     };
 

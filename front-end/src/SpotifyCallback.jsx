@@ -32,49 +32,75 @@ function SpotifyCallback() {
             localStorage.setItem('accessToken', data.accessToken)
             createUser();
         } catch (error) {
-            console.error('Error:', error);
+            toast({
+                title: "Error",
+                description: error.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
             navigate('/');
         }
     };
 
-    function createUser() {
+    async function createUser() {
+        setIsLoading(true);
         const accessToken = localStorage.getItem('accessToken');
         if (accessToken) {
-            fetch('https://api.spotify.com/v1/me', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-            })
-                .then(response => response.json())
-                .then(result => {
-                    const email = result.email
-                    const username = result.id
-                    const token = localStorage.getItem('accessToken')
-                    fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/login`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                email,
-                                username,
-                                token
-                            }),
-                        })
-                    navigate(`/${username}`);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                })
-                .finally(() => {
-                    setTimeout(() => {
-                        setIsLoading(false);
-                    }, 3000);
+            try {
+                const userResponse = await fetch('https://api.spotify.com/v1/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
                 });
+    
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+    
+                const userData = await userResponse.json();
+                const { email, id: username } = userData;
+                const token = accessToken;
+    
+                const loginResponse = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, username, token }),
+                });
+    
+                if (!loginResponse.ok) {
+                    throw new Error('Failed to log in');
+                }
+    
+                navigate(`/${username}`);
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: error.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top"
+                });
+            } finally {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, 3000);
+            }
         } else {
-            console.error('No access token found');
+            toast({
+                title: "Error",
+                description: "No access token found",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
         }
     }
 

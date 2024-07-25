@@ -41,9 +41,20 @@ function Create() {
                 }
             });
             const searchData = await response.json();
+            if (!searchData.tracks.items.length) {
+                throw new Error('Error searching for songs.');
+            }
             setSearchOptions(searchData.tracks.items);
         } catch (error) {
-            console.error(error);
+            toast({
+                title: "Error",
+                description: error.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
         }
     };
 
@@ -65,7 +76,14 @@ function Create() {
                 body: JSON.stringify({ stitchId, imageUrl })
             });
         } catch (error) {
-            console.error('Error updating stitch:', error);
+            toast({
+                title: "Error",
+                description: "Error updating stitch image",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
     };
 
@@ -93,11 +111,15 @@ function Create() {
                 .then(data => {
                     getStitchSongs();
                 })
-                .catch(error => {
-                    console.error('Error creating new song:', error);
-                });
         } catch (error) {
-            console.error('Error creating new stitch:', error);
+            toast({
+                title: "Error",
+                description: "Error adding song to stitch",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
     }
 
@@ -131,7 +153,14 @@ function Create() {
             setRecommendedSongs(recommendedSongs);
             setNextAllowedRequestTime(currentTime + 15000);
         } catch (error) {
-            console.error('Error getting songs in stitch:', error);
+            toast({
+                title: "Error",
+                description: "Error getting recommendations.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
     }
 
@@ -147,7 +176,14 @@ function Create() {
             }
             setCurrentStitchSongs(stitchSongs);
         } catch (error) {
-            console.error('Error getting songs in stitch:', error);
+            toast({
+                title: "Error",
+                description: "Error getting songs in stitch",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
 
     }
@@ -163,25 +199,38 @@ function Create() {
     const handleToVisualization = () => {
         navigate(`/${username}/visualization`, { state: { stitchId } });
     }
-
+    
     useEffect(() => {
+        const deleteSong = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/song/${deleteId}`, {
+                    method: "DELETE",
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete song');
+                }
+
+                setDeleteId('');
+                getStitchSongs();
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: error.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top"
+                });
+            }
+        };
+
         if (deleteId) {
-            fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/song/${deleteId}`, {
-                method: "DELETE",
-            })
-                .then(response => {
-                    if (response.ok) {
-                        setDeleteId('');
-                        getStitchSongs();
-                    } else {
-                        throw new Error('Failed to delete song');
-                    }
-                })
-                .catch(error => console.error('Error deleting song:', error));
+            deleteSong();
         } else {
             getStitchSongs();
         }
-    }, [deleteId, stitchId]);
+    }, [deleteId, stitchId, toast]);
 
     return (
         <Box className='Create'>

@@ -7,7 +7,8 @@ import {
     IconButton,
     Flex,
     Input,
-    Box
+    Box,
+    useToast
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
@@ -15,6 +16,7 @@ import { useState, useEffect } from 'react';
 const CustomName = ({ stitchId }) => {
     const [title, setTitle] = useState('Untitled');
     const [revTitle, setRevTitle] = useState('Untitled');
+    const toast = useToast();
 
     const handleChange = (event) => {
         setTitle(event.target.value);
@@ -41,7 +43,14 @@ const CustomName = ({ stitchId }) => {
 
             setRevTitle(title);
         } catch (error) {
-            console.error('Error updating stitch name:', error);
+            toast({
+                title: "Error",
+                description: error.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
     };
 
@@ -63,7 +72,14 @@ const CustomName = ({ stitchId }) => {
                 setTitle(data.title || 'Untitled');
                 setRevTitle(data.title || 'Untitled');
             } catch (error) {
-                console.error('Error fetching stitch name:', error);
+                toast({
+                    title: "Error",
+                    description: `Error fetching stitch name: ${error.message}`,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top"
+                });
             }
         };
 
