@@ -23,7 +23,7 @@ function Stitch({ stitch, username, deleteStitch }) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ stitchId })
+                body: JSON.stringify({ stitchId, username })
             });
         } catch (error) {
             console.error('Error exportin stitch to Spotify:', error);

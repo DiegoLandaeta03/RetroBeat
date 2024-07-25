@@ -52,7 +52,9 @@ function Home() {
     return (
         <Box className='Home' display='flex' flexDirection='column' minHeight='100vh'>
             <header>
-                <Navbar username={username} page={"home"} />
+                <Box bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)">
+                    <Navbar username={username} page={"home"} />
+                </Box>
             </header>
             <main>
                 <Box className='beatTitle'>
@@ -61,7 +63,7 @@ function Home() {
                 {stitches && (
                     <SimpleGrid spacing={6} p={7} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
                         {stitches.map((stitch) => (
-                            <Stitch key={stitch.id} stitch={stitch} username={username} deleteStitch={deleteStitch}/>
+                            <Stitch key={stitch.id} stitch={stitch} username={username} deleteStitch={deleteStitch} />
                         ))}
                     </SimpleGrid>
                 )}

@@ -142,10 +142,10 @@ router.patch('/image', async (req, res) => {
 });
 
 router.patch('/exportToSpotify', async (req, res) => {
-    const { stitchId } = req.body;
-
-    if (!stitchId) {
-        return res.status(400).json({ error: 'stitchId and title are required' });
+    const { stitchId, username } = req.body;
+    
+    if (!stitchId || !username) {
+        return res.status(400).json({ error: 'stitchId and username are required' });
     }
 
     try {
@@ -153,11 +153,34 @@ router.patch('/exportToSpotify', async (req, res) => {
             where: {
                 id: parseInt(stitchId)
             },
+            include: {
+                songs: true
+            }
         });
 
+        if (!stitch) {
+            return res.status(404).json({ error: 'Stitch not found' });
+        }
+
+        const accessToken = 'YOUR_SPOTIFY_ACCESS_TOKEN';
+
+        const playlistResponse = await fetch(`https://api.spotify.com/v1/users/${username}/playlists`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: stitch.title,
+                description: 'Created using SoundStitch',
+                public: true
+            })
+        });
+
+        res.json({ message: 'Exported to Spotify successfully', playlistId });
     } catch (error) {
-        console.error('Error updating stitch:', error);
-        res.status(500).json({ error: 'Failed to update stitch.' });
+        console.error('Error exporting to Spotify:', error);
+        res.status(500).json({ error: 'Failed to export to Spotify.' });
     }
 });
 
