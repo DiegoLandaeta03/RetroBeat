@@ -9,7 +9,16 @@ const Graph = ({ nodes, edges }) => {
             {edges.map((edge, index) => {
                 const fromNode = nodes.find(node => node.id === edge.from);
                 const toNode = nodes.find(node => node.id === edge.to);
-                return <Edge key={index} from={fromNode} to={toNode} color={edge.color} />;
+                return (
+                    <Edge
+                        key={index}
+                        from={fromNode}
+                        to={toNode}
+                        fromRadius={fromNode.effectiveRadius}
+                        toRadius={toNode.effectiveRadius}
+                        color={edge.color}
+                    />
+                );
             })}
             {nodes.map(node => (
                 <Node key={node.id} node={node} />

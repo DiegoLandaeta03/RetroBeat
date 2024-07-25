@@ -186,7 +186,9 @@ function Create() {
     return (
         <Box className='Create'>
             <header>
-                <Navbar username={username} page={"create"} />
+                <Box bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)">
+                    <Navbar username={username} page={"create"} />
+                </Box>
             </header>
             <main>
                 <Box display="flex" justifyContent="center" textAlign="center" mt="1em">

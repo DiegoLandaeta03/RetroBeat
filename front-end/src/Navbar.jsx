@@ -167,7 +167,7 @@ function Navbar({ username, page }) {
     }, []);
 
     return (
-        <Box w="100%" color="white" p={4} mx="auto" paddingTop='2em' paddingBottom='2em' bgGradient="radial-gradient(circle, rgba(115, 41, 123, 1) 0%, rgba(0,0,0,1) 86%)" paddingLeft='0'>
+        <Box w="100%" color="white" p={4} mx="auto" paddingTop='2em' paddingBottom='2em' paddingLeft='0'>
             <Flex align="center">
                 <Heading marginLeft='0.7em' paddingLeft='0' as='h1' size='2xl' textAlign='left' flexGrow={1}>
                     SoundStitch
