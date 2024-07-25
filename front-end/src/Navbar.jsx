@@ -27,7 +27,8 @@ import {
     Tooltip,
     SliderThumb,
     SimpleGrid,
-    Image
+    Image,
+    useToast
 } from "@chakra-ui/react";
 import { HamburgerIcon, LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
 
@@ -45,6 +46,7 @@ function Navbar({ username, page }) {
     const [showExploreValue, setShowExplore] = useState(false);
     const [profileData, setProfileData] = useState(null);
     const [userTopTracks, setUserTopTracks] = useState(null);
+    const toast = useToast();
 
     const labelStyles = {
         mt: '2',
@@ -56,7 +58,15 @@ function Navbar({ username, page }) {
     const fetchProfileData = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
-            console.error('Access token not available.');
+            toast({
+                title: "Error",
+                description: "No access token: please logout and log back in!",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
             return;
         }
 
@@ -72,14 +82,30 @@ function Navbar({ username, page }) {
             const data = await response.json();
             setProfileData(data);
         } catch (error) {
-            console.error('Error fetching profile data:', error);
+            toast({
+                title: "Error",
+                description: error.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
         }
     };
 
     const fetchTopUserTracks = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
-            console.error('Access token not available.');
+            toast({
+                title: "Error",
+                description: "No access token: please logout and log back in!",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
             return;
         }
 
@@ -90,12 +116,20 @@ function Navbar({ username, page }) {
                 }
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch profile data');
+                throw new Error('Failed to fetch your top tracks');
             }
             const data = await response.json();
             setUserTopTracks(data.items);
         } catch (error) {
-            console.error('Error fetching profile data:', error);
+            toast({
+                title: "Error",
+                description: error.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+            navigate('/');
         }
     };
 
@@ -137,7 +171,14 @@ function Navbar({ username, page }) {
             const data = await response.json();
             return data.id;
         } catch (error) {
-            console.error('Error creating new stitch:', error);
+            toast({
+                title: "Error",
+                description: `Error creating new stitch: ${error.message}`,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
     };
 

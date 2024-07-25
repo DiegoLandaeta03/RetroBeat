@@ -1,4 +1,4 @@
-import { Box, Flex, Button, Text, Heading, background } from '@chakra-ui/react';
+import { Box, Flex, Button, Text, Heading, useToast } from '@chakra-ui/react';
 import Graph from './Graph';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
@@ -21,6 +21,7 @@ function Visualization() {
     const [zoomLevel, setZoomLevel] = useState(initialZoom);
     const [translation, setTranslation] = useState(initialTranslation);
     const graphContainerRef = useRef(null);
+    const toast = useToast();
 
     const handleMouseDown = (event) => {
         setIsDragging(true);
@@ -187,7 +188,14 @@ function Visualization() {
                 const data = await response.json();
                 setClusterData(data);
             } catch (error) {
-                console.error('Error getting clusters:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to load cluster data.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top"
+                });
             }
         };
 
@@ -195,15 +203,20 @@ function Visualization() {
             try {
                 const url = `${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/title/${stitchId}`;
                 const response = await fetch(url);
-
                 if (!response.ok) {
                     throw new Error('Failed to fetch stitch name');
                 }
-
                 const data = await response.json();
                 setTitle(data.title || 'Untitled');
             } catch (error) {
-                console.error('Error fetching stitch name:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to get stitch name.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top"
+                });
             }
         };
 

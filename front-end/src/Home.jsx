@@ -1,6 +1,6 @@
 import Navbar from './Navbar';
 import './Home.css';
-import { Heading, Box, SimpleGrid } from '@chakra-ui/react';
+import { Heading, Box, SimpleGrid, useToast } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Stitch from './Stitch';
@@ -11,6 +11,7 @@ function Home() {
     const username = params.username;
     const [stitches, setStitches] = useState([]);
     const [deleteId, setDeleteId] = useState();
+    const toast = useToast();
 
     const getStitches = async () => {
         try {
@@ -21,7 +22,14 @@ function Home() {
             const data = await response.json();
             setStitches(data);
         } catch (error) {
-            console.error('Error getting stitches:', error);
+            toast({
+                title: "Error",
+                description: "Error loading your stitches.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
         }
     };
 
@@ -31,23 +39,36 @@ function Home() {
     };
 
     useEffect(() => {
+        const deleteStitch = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/${deleteId}`, {
+                    method: "DELETE",
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete stitch');
+                }
+
+                setDeleteId('');
+                getStitches();
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: error.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top"
+                });
+            }
+        };
+
         if (deleteId) {
-            fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/${deleteId}`, {
-                method: "DELETE",
-            })
-                .then(response => {
-                    if (response.ok) {
-                        setDeleteId('');
-                        getStitches();
-                    } else {
-                        throw new Error('Failed to delete stitch');
-                    }
-                })
-                .catch(error => console.error('Error deleting stitch:', error));
+            deleteStitch();
         } else {
             getStitches();
         }
-    }, [deleteId, username]);
+    }, [deleteId, username, toast]);
 
     return (
         <Box className='Home' display='flex' flexDirection='column' minHeight='100vh'>
