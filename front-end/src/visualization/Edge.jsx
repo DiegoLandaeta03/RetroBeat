@@ -1,4 +1,5 @@
 import { Box } from '@chakra-ui/react';
+import './Visualization.css'
 
 const Edge = ({ from, to, color }) => {
     const nodeSize = 5 * 16;
@@ -29,7 +30,7 @@ const Edge = ({ from, to, color }) => {
     return (
         <Box position="absolute" left={`${adjustedStartX}px`} top={`${adjustedStartY}px`}>
             <svg width={`${newLength}px`} height="3px" style={{ transform: `rotate(${angle}deg)`, transformOrigin: '0 0' }}>
-                <line x1="0" y1="1.5" x2={newLength} y2="1.5" stroke={color} strokeWidth="3" />
+                <line x1="0" y1="1.5" x2={newLength} y2="1.5" stroke={color} strokeWidth="3" strokeDasharray={newLength} strokeDashoffset={newLength} style={{ animation: 'dash 2s linear forwards' }} />
             </svg>
         </Box>
     );
