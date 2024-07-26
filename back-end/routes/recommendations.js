@@ -1,43 +1,11 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const { fetchAudioFeatures, getAccessToken } = require('./audioFeaturesAndAccesToken');
 const fetch = require('node-fetch');
 const router = express.Router();
 const prisma = new PrismaClient();
 
 router.use(express.json());
-
-const getAccessToken = async (userId) => {
-    const token = await prisma.token.findFirst({
-        where: {
-            userId
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
-    });
-    return token ? token.token : null;
-};
-
-const fetchAudioFeatures = async (songs, accessToken) => {
-    const songIds = songs.map(song => (song.uri).split(':').pop());
-    const stringOfIds = songIds.join(',');
-
-    try {
-        const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${encodeURIComponent(stringOfIds)}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const audioData = await response.json();
-        return audioData.audio_features;
-    } catch (error) {
-
-        return [];
-    }
-};
 
 function calculateGlobalFeatureAverages(features) {
     let totalValence = 0;

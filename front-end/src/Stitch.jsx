@@ -26,16 +26,31 @@ function Stitch({ stitch, username, deleteStitch }) {
                 },
                 body: JSON.stringify({ stitchId, username })
             });
+    
+            const responseData = await response.json();
+    
+            if (!response.ok) {
+                throw new Error(responseData.error || 'Unknown error');
+            }
+    
+            toast({
+                title: "Success",
+                description: responseData.message,
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+                position: "top"
+            });
+    
         } catch (error) {
             toast({
                 title: "Error",
                 description: "Failed to export stitch to Spotify",
                 status: "error",
-                duration: 5000,
+                duration: 3000,
                 isClosable: true,
                 position: "top"
             });
-            navigate('/');
         }
     };
 
