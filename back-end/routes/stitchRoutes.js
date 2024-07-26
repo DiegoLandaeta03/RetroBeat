@@ -1,5 +1,6 @@
 const express = require('express')
 const { PrismaClient } = require('@prisma/client')
+const { getAccessToken } = require('./audioFeaturesAndAccesToken');
 const router = express.Router()
 const prisma = new PrismaClient()
 
@@ -50,7 +51,6 @@ router.get('/title/:stitchId', async (req, res) => {
 
         res.status(200).json({ title: stitch.title });
     } catch (error) {
-        console.error('Error retrieving stitch:', error);
         res.status(500).json({ error: 'Failed to retrieve stitch.' });
     }
 });
@@ -113,7 +113,6 @@ router.patch('/title', async (req, res) => {
         });
         res.json(updatedStitch);
     } catch (error) {
-        console.error('Error updating stitch:', error);
         res.status(500).json({ error: 'Failed to update stitch.' });
     }
 });
@@ -136,14 +135,13 @@ router.patch('/image', async (req, res) => {
         });
         res.json(updatedStitch);
     } catch (error) {
-        console.error('Error updating stitch:', error);
         res.status(500).json({ error: 'Failed to update stitch.' });
     }
 });
 
 router.patch('/exportToSpotify', async (req, res) => {
     const { stitchId, username } = req.body;
-    
+    console.log(req.body)
     if (!stitchId || !username) {
         return res.status(400).json({ error: 'stitchId and username are required' });
     }
@@ -154,7 +152,11 @@ router.patch('/exportToSpotify', async (req, res) => {
                 id: parseInt(stitchId)
             },
             include: {
-                songs: true
+                songs: {
+                    orderBy: {
+                        id: 'asc'
+                    }
+                }
             }
         });
 
@@ -162,25 +164,96 @@ router.patch('/exportToSpotify', async (req, res) => {
             return res.status(404).json({ error: 'Stitch not found' });
         }
 
-        const accessToken = 'YOUR_SPOTIFY_ACCESS_TOKEN';
+        const userId = stitch.userId;
+        const accessToken = await getAccessToken(userId);
 
-        const playlistResponse = await fetch(`https://api.spotify.com/v1/users/${username}/playlists`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: stitch.title,
-                description: 'Created using SoundStitch',
-                public: true
-            })
-        });
+        if (!accessToken) {
+            return res.status(401).json({ error: 'Access token not found' });
+        }
 
-        res.json({ message: 'Exported to Spotify successfully', playlistId });
+        let playlistId = stitch.spotifyId;
+        if (playlistId) {
+            const updatePlaylistDetailsResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: stitch.title,
+                    description: 'Created using SoundStitch' 
+                })
+            });
+
+            if (!updatePlaylistDetailsResponse.ok) {
+                throw new Error('Failed to update playlist details');
+            }
+
+            const updatePlaylistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uris: stitch.songs.map(song => song.uri)
+                })
+            });
+
+            if (!updatePlaylistResponse.ok) {
+                throw new Error('Failed to update playlist tracks');
+            }
+            
+            res.json({ message: 'Updated in Spotify successfully' });
+        } else {
+            const createPlaylistResponse = await fetch(`https://api.spotify.com/v1/users/${username}/playlists`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: stitch.title,
+                    description: 'Created using SoundStitch',
+                    public: true
+                })
+            });
+
+            const playlistData = await createPlaylistResponse.json();
+            const playlistId = playlistData.id;
+
+            if (!playlistId) {
+                throw new Error('Failed to create playlist');
+            }
+
+            await prisma.stitch.update({
+                where: {
+                    id: parseInt(stitchId)
+                },
+                data: {
+                    spotifyId: playlistId
+                }
+            });
+
+            const addTracksResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uris: stitch.songs.map(song => song.uri)
+                })
+            });
+
+            if (!addTracksResponse.ok) {
+                throw new Error('Failed to add tracks to the playlist');
+            }
+            res.json({ message: 'Exported to Spotify successfully' });
+        }
+
     } catch (error) {
-        console.error('Error exporting to Spotify:', error);
-        res.status(500).json({ error: 'Failed to export to Spotify.' });
+        res.status(500).json({ error: `Failed to export to Spotify: ${error.message}` });
     }
 });
 
@@ -211,7 +284,6 @@ router.delete('/:id', async (req, res) => {
                     }
 
                 } catch (error) {
-                    console.error('Error deleting song:', error);
                     throw error;
                 }
             });
@@ -225,7 +297,6 @@ router.delete('/:id', async (req, res) => {
 
         res.status(200).json(deletedStitch);
     } catch (error) {
-        console.error('Error deleting stitch and songs:', error);
         res.status(500).json({ error: 'Failed to delete stitch and associated songs.' });
     }
 });

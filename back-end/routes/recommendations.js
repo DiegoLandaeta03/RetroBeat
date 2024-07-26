@@ -1,43 +1,11 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const { fetchAudioFeatures, getAccessToken } = require('./audioFeaturesAndAccesToken');
 const fetch = require('node-fetch');
 const router = express.Router();
 const prisma = new PrismaClient();
 
 router.use(express.json());
-
-const getAccessToken = async (userId) => {
-    const token = await prisma.token.findFirst({
-        where: {
-            userId
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
-    });
-    return token ? token.token : null;
-};
-
-const fetchAudioFeatures = async (songs, accessToken) => {
-    const songIds = songs.map(song => (song.uri).split(':').pop());
-    const stringOfIds = songIds.join(',');
-
-    try {
-        const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${encodeURIComponent(stringOfIds)}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const audioData = await response.json();
-        return audioData.audio_features;
-    } catch (error) {
-        console.error(error);
-        return [];
-    }
-};
 
 function calculateGlobalFeatureAverages(features) {
     let totalValence = 0;
@@ -106,29 +74,25 @@ function getTonalityScore(lastSongFeatures, currentSongFeatures) {
     return 0;
 }
 
-function gradingAlgorithm(lastSongFeatures, recommendationAudioFeatures, stitchAverages, moodWeight, danceWeight, mixWeight) {
-    try {
-        const scores = new Map();
-        recommendationAudioFeatures.forEach(feature => {
-            const recommendId = feature.uri.split(':').pop();
-            const valenceScore = 1 - Math.abs(stitchAverages.valence - feature.valence) / stitchAverages.valence;
-            const energyScore = 1 - Math.abs(stitchAverages.energy - feature.energy) / stitchAverages.energy;
-            const instrumentScore = 1 - Math.abs(stitchAverages.instrumentalness - feature.instrumentalness) / stitchAverages.instrumentalness;
-            const totalMoodScore = (valenceScore + energyScore + instrumentScore) / 3;
-            const danceScore = feature.danceability;
-            const tempoScore = 1 - Math.abs(lastSongFeatures.tempo - feature.tempo) / lastSongFeatures.tempo;
-            const toneScore = getTonalityScore(lastSongFeatures, feature);
-            const totalMixScore = (tempoScore + toneScore) / 2;
-            const totalScore = (totalMoodScore * moodWeight) + (danceScore * danceWeight) + (totalMixScore * mixWeight)
-            scores.set(recommendId, totalScore);
-        });
+function calculateAndSortScores(lastSongFeatures, recommendationAudioFeatures, stitchAverages, moodWeight, danceWeight, mixWeight) {
+    const scores = new Map();
+    recommendationAudioFeatures.forEach(feature => {
+        const recommendId = feature.uri.split(':').pop();
+        const valenceScore = 1 - Math.abs(stitchAverages.valence - feature.valence) / stitchAverages.valence;
+        const energyScore = 1 - Math.abs(stitchAverages.energy - feature.energy) / stitchAverages.energy;
+        const instrumentScore = 1 - Math.abs(stitchAverages.instrumentalness - feature.instrumentalness) / stitchAverages.instrumentalness;
+        const totalMoodScore = (valenceScore + energyScore + instrumentScore) / 3;
+        const danceScore = feature.danceability;
+        const tempoScore = 1 - Math.abs(lastSongFeatures.tempo - feature.tempo) / lastSongFeatures.tempo;
+        const toneScore = getTonalityScore(lastSongFeatures, feature);
+        const totalMixScore = (tempoScore + toneScore) / 2;
+        const totalScore = (totalMoodScore * moodWeight) + (danceScore * danceWeight) + (totalMixScore * mixWeight)
+        scores.set(recommendId, totalScore);
+    });
 
-        const sortedScores = Array.from(scores).sort((a, b) => b[1] - a[1]);
-        const sortedIds = sortedScores.map(entry => entry[0]);
-        return sortedIds;
-    } catch (error) {
-        console.error("Error in gradingAlgorithm:", error);
-    }
+    const sortedScores = Array.from(scores).sort((a, b) => b[1] - a[1]);
+    const sortedIds = sortedScores.map(entry => entry[0]);
+    return sortedIds;
 }
 
 const fetchRecommendations = async (songs, accessToken, exploreWeight) => {
@@ -146,7 +110,6 @@ const fetchRecommendations = async (songs, accessToken, exploreWeight) => {
         if (!response.ok) {
             if (response.status === 429) {
                 const retryAfter = response.headers.get('Retry-After');
-                console.error(`Rate limit exceeded. Retry after ${retryAfter} seconds.`);
                 return null;
             }
             throw new Error(`API request failed with status ${response.status}`);
@@ -155,7 +118,6 @@ const fetchRecommendations = async (songs, accessToken, exploreWeight) => {
         const trackRecommendations = recommendData.tracks;
         return trackRecommendations;
     } catch (error) {
-        console.error('Error fetching recommendations:', error);
         return null;
     }
 };
@@ -173,7 +135,7 @@ const fetchRankedTracks = async (songIds, accessToken) => {
         const tracks = trackData.tracks;
         return tracks;
     } catch (error) {
-        console.error(error);
+        return null;
     }
 }
 
@@ -212,7 +174,7 @@ router.get('/:stitchId', async (req, res) => {
 
         const { lastSongFeatures, stitchAverages } = await fetchAndProcessAudioFeatures(stitch.songs, accessToken);
         const recommendationAudioFeatures = await fetchAudioFeatures(recommendationTracks, accessToken);
-        const rankedRecommendationIds = gradingAlgorithm(lastSongFeatures, recommendationAudioFeatures, stitchAverages, stitch.mood, stitch.dance, stitch.mix);
+        const rankedRecommendationIds = calculateAndSortScores(lastSongFeatures, recommendationAudioFeatures, stitchAverages, stitch.mood, stitch.dance, stitch.mix);
         const userRecommendedTracks = await fetchRankedTracks(rankedRecommendationIds, accessToken);
         res.status(200).json(userRecommendedTracks);
     } catch (error) {

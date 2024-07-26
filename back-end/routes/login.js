@@ -27,7 +27,6 @@ router.delete('/logout', async (req, res) => {
             return res.status(404).json({ error: "Token not found" })
         }
     } catch (error) {
-        console.error("Logout error:", error)
         return res.status(500).json({ error: "Internal server error" })
     }
 })
