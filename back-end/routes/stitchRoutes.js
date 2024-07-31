@@ -55,9 +55,43 @@ router.get('/title/:stitchId', async (req, res) => {
     }
 });
 
+router.get('/preferences/:stitchId', async (req, res) => {
+    const { stitchId } = req.params;
+    try {
+        const stitch = await prisma.stitch.findUnique({
+            where: {
+                id: parseInt(stitchId)
+            },
+            select: {
+                mood: true,
+                dance: true,
+                mix: true,
+                explore: true,
+                totalPreferences: true
+            }
+        });
+
+        if (!stitch) {
+            return res.status(404).json({ error: 'Stitch not found.' });
+        }
+
+        const originalMood = Math.round(stitch.mood * stitch.totalPreferences);
+        const originalDance = Math.round(stitch.dance * stitch.totalPreferences);
+        const originalMix = Math.round(stitch.mix * stitch.totalPreferences);
+
+        res.status(200).json({
+            mood: originalMood,
+            dance: originalDance,
+            mix: originalMix,
+            explore: stitch.explore * 100
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve stitch preferences.' });
+    }
+});
+
 router.post('/create', async (req, res) => {
     const { title, username, mood, dance, mix, explore, imageUrl } = req.body
-
     const user = await prisma.user.findUnique({
         where: {
             username: username
@@ -83,12 +117,12 @@ router.post('/create', async (req, res) => {
     const newStitch = await prisma.stitch.create({
         data: {
             title,
-            duration: 0,
             imageUrl,
             mood: moodWeight,
             dance: danceWeight,
             mix: mixWeight,
-            explore,
+            totalPreferences,
+            explore: explore / 100,
             userId: user.id
         }
     })
@@ -101,7 +135,7 @@ router.patch('/title', async (req, res) => {
     if (!stitchId || !title) {
         return res.status(400).json({ error: 'stitchId and title are required' });
     }
-
+    
     try {
         const updatedStitch = await prisma.stitch.update({
             where: {
@@ -111,6 +145,44 @@ router.patch('/title', async (req, res) => {
                 title
             }
         });
+        res.json(updatedStitch);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update stitch.' });
+    }
+});
+
+router.patch('/preferences', async (req, res) => {
+    const { stitchId, mood, dance, mix, explore } = req.body;
+
+    const totalPreferences = mood + dance + mix;
+
+    let moodWeight = null;
+    let danceWeight = null;
+    let mixWeight = null;
+
+    if (totalPreferences == 0) {
+        moodWeight = 0;
+        danceWeight = 0;
+        mixWeight = 0;
+    } else {
+        moodWeight = mood / totalPreferences;
+        danceWeight = dance / totalPreferences;
+        mixWeight = 1 - (moodWeight + danceWeight);
+    }
+
+    try {
+        const updatedStitch = await prisma.stitch.update({
+            where: {
+                id: parseInt(stitchId)
+            },
+            data: {
+                mood: moodWeight,
+                dance: danceWeight,
+                mix: mixWeight,
+                explore: explore / 100
+            }
+        });
+
         res.json(updatedStitch);
     } catch (error) {
         res.status(500).json({ error: 'Failed to update stitch.' });
@@ -141,7 +213,7 @@ router.patch('/image', async (req, res) => {
 
 router.patch('/exportToSpotify', async (req, res) => {
     const { stitchId, username } = req.body;
-    console.log(req.body)
+    
     if (!stitchId || !username) {
         return res.status(400).json({ error: 'stitchId and username are required' });
     }

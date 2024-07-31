@@ -1,11 +1,12 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { Box, Input, FormControl, Heading, Button, Text, useToast } from '@chakra-ui/react';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Input, FormControl, Heading, Button, Text, useToast, useDisclosure } from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Song from './Song';
 import CustomName from './CustomName';
 import Footer from './Footer';
 import noImage from './assets/Image_not_available.png';
+import PreferenceModal from './PreferenceModal';
 
 function Create() {
     const params = useParams();
@@ -20,6 +21,22 @@ function Create() {
     const stitchId = location.state.stitchId;
     const [deleteId, setDeleteId] = useState('');
     const [nextAllowedRequestTime, setNextAllowedRequestTime] = useState(Date.now());
+    const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: closePreferenceModal } = useDisclosure();
+    const moodValueRef = useRef();
+    const danceValueRef = useRef();
+    const mixValueRef = useRef();
+    const exploreValueRef = useRef();
+    const [moodValue, setMoodValue] = useState();
+    const [danceValue, setDanceValue] = useState();
+    const [mixValue, setMixValue] = useState();
+    const [exploreValue, setExploreValue] = useState();
+
+    const labelStyles = {
+        mt: '2',
+        ml: '-2.5',
+        fontSize: 'sm',
+        color: 'black'
+    }
 
     const handleSearch = (event) => {
         const song = event.target.value;
@@ -164,6 +181,30 @@ function Create() {
         }
     }
 
+    const getStitchPreferences = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/preferences/${stitchId}`);
+            const preferences = await response.json();
+            moodValueRef.current = preferences.mood;
+            danceValueRef.current = preferences.dance;
+            mixValueRef.current = preferences.mix;
+            exploreValueRef.current = preferences.explore;
+            setMoodValue(preferences.mood);
+            setDanceValue(preferences.dance);
+            setMixValue(preferences.mix);
+            setExploreValue(preferences.explore);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Error getting stitch preferences.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+        }
+    }
+
     const getStitchSongs = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/song/${stitchId}`);
@@ -196,10 +237,69 @@ function Create() {
         navigate(`/${username}`);
     };
 
-    const handleToVisualization = () => {
+    const handleToVisualization = async () => {
+        await getStitchSongs();
+        if (currentStitchSongs.length <= 2) {
+            toast({
+                description: "Please have at least 3 songs in your stitch recommendations!",
+                status: "info",
+                duration: 3000,
+                isClosable: true,
+                position: "bottom"
+            });
+            return;
+        }
         navigate(`/${username}/visualization`, { state: { stitchId } });
     }
-    
+
+    const handlePreferenceModalClose = () => {
+        setMoodValue(moodValueRef.current);
+        setDanceValue(danceValueRef.current);
+        setMixValue(mixValueRef.current);
+        setExploreValue(exploreValueRef.current);
+        closePreferenceModal();
+    };
+
+    const handlePreferenceSubmit = async () => {
+        await updatePreferences();
+        handlePreferenceModalClose();
+    };
+
+    const updatePreferences = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/preferences`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stitchId, mood: moodValue, dance: danceValue, mix: mixValue, explore: exploreValue })
+            });
+
+            moodValueRef.current = moodValue;
+            danceValueRef.current = danceValue;
+            mixValueRef.current = mixValue;
+            exploreValueRef.current = exploreValue;
+
+            toast({
+                title: "Success",
+                description: "Preferences were saved!",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+                position: "bottom"
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Error updating stitch preferences",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+        }
+    };
+
     useEffect(() => {
         const deleteSong = async () => {
             try {
@@ -229,6 +329,7 @@ function Create() {
             deleteSong();
         } else {
             getStitchSongs();
+            getStitchPreferences();
         }
     }, [deleteId, stitchId, toast]);
 
@@ -305,7 +406,7 @@ function Create() {
                             color="white"
                             width="11em"
                             mb="1em"
-                            _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                            _focus={{ boxShadow: 'none' }}
                             _active={{ boxShadow: 'none' }}
                             _hover={{
                                 opacity: 1,
@@ -317,11 +418,46 @@ function Create() {
                         >
                             <Text fontSize="lg">View Visualization</Text>
                         </Button>
+
+                        <Button
+                            className="navigateToVisualization"
+                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                            color="white"
+                            width="11em"
+                            mb="1em"
+                            _focus={{ boxShadow: 'none' }}
+                            _active={{ boxShadow: 'none' }}
+                            _hover={{
+                                opacity: 1,
+                                backgroundSize: 'auto',
+                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                            }}
+                            onClick={onCreateOpen}
+                        >
+                            <Text fontSize="lg">Preferences</Text>
+                        </Button>
+
+                        <PreferenceModal
+                            isOpen={isCreateOpen}
+                            onClose={handlePreferenceModalClose}
+                            moodValue={moodValue}
+                            setMoodValue={setMoodValue}
+                            danceValue={danceValue}
+                            setDanceValue={setDanceValue}
+                            mixValue={mixValue}
+                            setMixValue={setMixValue}
+                            exploreValue={exploreValue}
+                            setExploreValue={setExploreValue}
+                            handlePreferenceSubmit={handlePreferenceSubmit}
+                            labelStyles={labelStyles}
+                        />
+
                         <Button
                             className="finalizeStitch"
                             bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
                             color="white"
-                            width="10em"
+                            width="11em"
                             _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
                             _active={{ boxShadow: 'none' }}
                             _hover={{
