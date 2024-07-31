@@ -15,3 +15,29 @@ SoundStitch works as a tool to better craft your playlists, called “stitches�
 **Scope**
 - The initial scope allows the user to craft a “stitch” with songs of their choice, which will be retrieved from the Spotify app. They can provide their preferences to create the perfect “stitch” based on a recommendation algorithm. 
 
+**User Stories**
+
+Required
+- [x] User can log in with Spotify
+- [x] User can log out of application
+- [x] User can search for songs
+- [x] User can play 30 second preview of song
+- [x] User can create a ‘stitch’
+- [x] User can add songs to the ‘stitch’
+- [x] User can remove songs from ‘stitch’
+- [x] User can name ‘stitch’
+- [x] User can see their list of created ‘stitches’
+- [x] User can delete a ‘stitch’
+- [x] User can edit an existing ‘stitch’
+- [x] User can access their profile
+- [x] TC1: Users can craft ‘stitches’ based on a set of weighted values + a set of initial songs, which will feed a recommendation algorithm
+- [x] TC2: Users can visualize relationships between the songs that compose their crafted ‘stitches’
+
+
+Optional
+- [x] User is notified about errors when navigating through the page
+- [x] User can export their ‘stitch’ to their Spotify
+- [x] User can edit the parameters of the recommendation algorithm while they are creating the ‘stitch’
+- [ ] User are alerted before returning home while making a playlist [ref]
+- [ ] User can import their playlists to the application and edit them based on the same recommendation algorithm
+- [ ] User can favorite their playlists
