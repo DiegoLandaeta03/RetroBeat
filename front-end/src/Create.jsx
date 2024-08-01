@@ -1,11 +1,12 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { Box, Input, FormControl, Heading, Button, Text, useToast } from '@chakra-ui/react';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Input, FormControl, Heading, Button, Text, useToast, useDisclosure, Flex, Divider, Center, Spinner } from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Song from './Song';
 import CustomName from './CustomName';
 import Footer from './Footer';
 import noImage from './assets/Image_not_available.png';
+import PreferenceModal from './PreferenceModal';
 
 function Create() {
     const params = useParams();
@@ -16,10 +17,27 @@ function Create() {
     const [searchOptions, setSearchOptions] = useState([]);
     const [currentStitchSongs, setCurrentStitchSongs] = useState([]);
     const [recommendedSongs, setRecommendedSongs] = useState([]);
+    const [loadingRecommended, setLoadingRecommended] = useState(false);
     const [currentAudio, setCurrentAudio] = useState(null);
     const stitchId = location.state.stitchId;
     const [deleteId, setDeleteId] = useState('');
     const [nextAllowedRequestTime, setNextAllowedRequestTime] = useState(Date.now());
+    const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: closePreferenceModal } = useDisclosure();
+    const moodValueRef = useRef();
+    const danceValueRef = useRef();
+    const mixValueRef = useRef();
+    const exploreValueRef = useRef();
+    const [moodValue, setMoodValue] = useState();
+    const [danceValue, setDanceValue] = useState();
+    const [mixValue, setMixValue] = useState();
+    const [exploreValue, setExploreValue] = useState();
+
+    const labelStyles = {
+        mt: '2',
+        ml: '-2.5',
+        fontSize: 'sm',
+        color: 'black'
+    }
 
     const handleSearch = (event) => {
         const song = event.target.value;
@@ -148,6 +166,7 @@ function Create() {
             return;
         }
         try {
+            setLoadingRecommended(true);
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/recommendation/${stitchId}`);
             const recommendedSongs = await response.json();
             setRecommendedSongs(recommendedSongs);
@@ -156,6 +175,32 @@ function Create() {
             toast({
                 title: "Error",
                 description: "Error getting recommendations.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+        } finally {
+            setLoadingRecommended(false);
+        }
+    }
+
+    const getStitchPreferences = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/preferences/${stitchId}`);
+            const preferences = await response.json();
+            moodValueRef.current = preferences.mood;
+            danceValueRef.current = preferences.dance;
+            mixValueRef.current = preferences.mix;
+            exploreValueRef.current = preferences.explore;
+            setMoodValue(preferences.mood);
+            setDanceValue(preferences.dance);
+            setMixValue(preferences.mix);
+            setExploreValue(preferences.explore);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Error getting stitch preferences.",
                 status: "error",
                 duration: 5000,
                 isClosable: true,
@@ -196,10 +241,69 @@ function Create() {
         navigate(`/${username}`);
     };
 
-    const handleToVisualization = () => {
+    const handleToVisualization = async () => {
+        await getStitchSongs();
+        if (currentStitchSongs.length <= 3) {
+            toast({
+                description: "Please have at least 4 songs in your stitch before seeing visualization!",
+                status: "info",
+                duration: 3000,
+                isClosable: true,
+                position: "bottom"
+            });
+            return;
+        }
         navigate(`/${username}/visualization`, { state: { stitchId } });
     }
-    
+
+    const handlePreferenceModalClose = () => {
+        setMoodValue(moodValueRef.current);
+        setDanceValue(danceValueRef.current);
+        setMixValue(mixValueRef.current);
+        setExploreValue(exploreValueRef.current);
+        closePreferenceModal();
+    };
+
+    const handlePreferenceSubmit = async () => {
+        await updatePreferences();
+        handlePreferenceModalClose();
+    };
+
+    const updatePreferences = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/preferences`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stitchId, mood: moodValue, dance: danceValue, mix: mixValue, explore: exploreValue })
+            });
+
+            moodValueRef.current = moodValue;
+            danceValueRef.current = danceValue;
+            mixValueRef.current = mixValue;
+            exploreValueRef.current = exploreValue;
+
+            toast({
+                title: "Success",
+                description: "Preferences were saved!",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+                position: "bottom"
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Error updating stitch preferences",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+        }
+    };
+
     useEffect(() => {
         const deleteSong = async () => {
             try {
@@ -229,6 +333,7 @@ function Create() {
             deleteSong();
         } else {
             getStitchSongs();
+            getStitchPreferences();
         }
     }, [deleteId, stitchId, toast]);
 
@@ -240,114 +345,162 @@ function Create() {
                 </Box>
             </header>
             <main>
-                <Box display="flex" justifyContent="center" textAlign="center" mt="1em">
-                    <CustomName stitchId={stitchId} />
-                </Box>
-                <Box width="100%" display="flex" justifyContent="space-evenly">
-                    <Box className="searchSection" color="white" minHeight="100vh" display="flex" flexDirection="column" alignItems="center" flex="1" mt="2em">
-                        <Heading as='h3' size='xl'>Add Songs</Heading>
-                        <Box textAlign="center" mb={4}>
-                            <FormControl mt="1em">
-                                <Input
-                                    type='text'
-                                    onChange={handleSearch}
-                                    placeholder='Search for songs...'
-                                    focusBorderColor='rgb(83, 41, 140)'
-                                />
-                            </FormControl>
+                <PreferenceModal
+                    isOpen={isCreateOpen}
+                    onClose={handlePreferenceModalClose}
+                    moodValue={moodValue}
+                    setMoodValue={setMoodValue}
+                    danceValue={danceValue}
+                    setDanceValue={setDanceValue}
+                    mixValue={mixValue}
+                    setMixValue={setMixValue}
+                    exploreValue={exploreValue}
+                    setExploreValue={setExploreValue}
+                    handlePreferenceSubmit={handlePreferenceSubmit}
+                    labelStyles={labelStyles}
+                />
+
+                <Box width="100%" display="flex" justifyContent="space-evenly" my='1em'>
+                    <Box className="stitchSection" color="white" minHeight="100vh" flex="1">
+                        <Box px='2em' width='50em'>
+                            <CustomName stitchId={stitchId} />
                         </Box>
-
-                        <Box width='30em' mb='1em'>
-                            {searchOptions.slice(0, 3).map((track) => (
-                                <Song
-                                    key={track.id}
-                                    track={track}
-                                    onPlay={handleAudioPlay}
-                                    location="addSongs"
-                                    onAdd={() => handleAddSong(track)}
-                                />
-                            ))}
-                        </Box>
-
-                        <Button
-                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
-                            color="white"
-                            width="14em"
-                            _focus={{ boxShadow: 'none' }}
-                            _active={{ boxShadow: 'none' }}
-                            _hover={{
-                                opacity: 1,
-                                backgroundSize: 'auto',
-                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
-                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
-                            }}
-                            onClick={getRecommendedSongs}
-                        >
-                            <Text fontSize="lg">Get Recommendations</Text>
-                        </Button>
-
-                        <Box width='30em' mt='1em'>
-                            {recommendedSongs.slice(0, 5).map((track) => (
-                                <Song
-                                    key={track.id}
-                                    track={track}
-                                    onPlay={handleAudioPlay}
-                                    location="addSongs"
-                                    onAdd={() => handleAddSong(track)}
-                                />
-                            ))}
-                        </Box>
-                    </Box>
-                    <Box mt="2em" display='flex' flexDirection='column' alignItems='center'>
-                        <Button
-                            className="navigateToVisualization"
-                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
-                            color="white"
-                            width="11em"
-                            mb="1em"
-                            _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
-                            _active={{ boxShadow: 'none' }}
-                            _hover={{
-                                opacity: 1,
-                                backgroundSize: 'auto',
-                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
-                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
-                            }}
-                            onClick={handleToVisualization}
-                        >
-                            <Text fontSize="lg">View Visualization</Text>
-                        </Button>
-                        <Button
-                            className="finalizeStitch"
-                            bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
-                            color="white"
-                            width="10em"
-                            _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
-                            _active={{ boxShadow: 'none' }}
-                            _hover={{
-                                opacity: 1,
-                                backgroundSize: 'auto',
-                                boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
-                                transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
-                            }}
-                            onClick={finalizeStitch}
-                        >
-                            <Text fontSize="lg">Finalize Stitch</Text>
-                        </Button>
-
-                    </Box>
-                    <Box className="stitchSection" color="white" minHeight="100vh" display="flex" flexDirection="column" alignItems="center" flex="1" mt="2em">
-                        <Heading as='h3' size='xl'>Current Stitch</Heading>
-                        <Box mt="1em" width="30em">
+                        <Flex direction="row" justifyContent="left" mt="1em" gap="0.5em" pl="2em">
+                            <Button
+                                bg="rgb(225, 225, 225)"
+                                color="black"
+                                size="sm"
+                                _focus={{ boxShadow: 'none' }}
+                                _active={{ boxShadow: 'none' }}
+                                _hover={{
+                                    boxShadow: '0 0 20px -2px rgba(255, 255, 255, 0.9)',
+                                    transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                                }}
+                                onClick={onCreateOpen}
+                            >
+                                Preferences
+                            </Button>
+                            <Button
+                                bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                                color="white"
+                                size="sm"
+                                _focus={{ boxShadow: 'none' }}
+                                _active={{ boxShadow: 'none' }}
+                                _hover={{
+                                    opacity: 1,
+                                    backgroundSize: 'auto',
+                                    boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                    transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                                }}
+                                onClick={handleToVisualization}
+                            >
+                                View Visualization
+                            </Button>
+                            <Button
+                                bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                                color="white"
+                                size="sm"
+                                _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
+                                _active={{ boxShadow: 'none' }}
+                                _hover={{
+                                    opacity: 1,
+                                    backgroundSize: 'auto',
+                                    boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                    transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                                }}
+                                onClick={finalizeStitch}
+                            >
+                                Finalize Stitch
+                            </Button>
+                        </Flex>
+                        <Box mt="1em" px="2em">
                             {currentStitchSongs.map((song) => (
-                                <Song
-                                    key={song.id}
-                                    track={song}
-                                    onPlay={handleAudioPlay}
-                                    location="currentStitch"
-                                    onRemove={() => handleRemove(song.id)}
-                                />
+                                <Flex justifyContent="center">
+                                    <Song
+                                        key={song.id}
+                                        track={song}
+                                        onPlay={handleAudioPlay}
+                                        location="currentStitch"
+                                        onRemove={() => handleRemove(song.id)}
+                                    />
+                                </Flex>
                             ))}
+                        </Box>
+                    </Box>
+                    <Center>
+                        <Divider orientation='vertical' />
+                    </Center>
+                    <Box className="searchSection" color="white" minHeight="100vh" flex="1">
+                        <Flex direction="row" justifyContent="space-between" alignItems="center" gap="1em" px="2em">
+                            <Box textAlign="center" mb='1em' flex='1'>
+                                <FormControl mt="1em">
+                                    <Input
+                                        type='text'
+                                        onChange={handleSearch}
+                                        placeholder='Search for songs here...'
+                                        focusBorderColor='rgb(83, 41, 140)'
+                                    />
+                                </FormControl>
+                            </Box>
+                            <Button
+                                bgGradient="linear(to-r, rgba(115, 41, 123, 0.9), rgb(83, 41, 140, 0.9))"
+                                color="white"
+                                size="sm"
+                                _focus={{ boxShadow: 'none' }}
+                                _active={{ boxShadow: 'none' }}
+                                _hover={{
+                                    opacity: 1,
+                                    backgroundSize: 'auto',
+                                    boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
+                                    transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
+                                }}
+                                onClick={getRecommendedSongs}
+                            >
+                                Get Recommendations
+                            </Button>
+                        </Flex>
+                        <Box px='2em'>
+                            {searchOptions.slice(0, 3).map((track) => (
+                                <Flex justifyContent="center">
+                                    <Song
+                                        key={track.id}
+                                        track={track}
+                                        onPlay={handleAudioPlay}
+                                        location="addSongs"
+                                        onAdd={() => handleAddSong(track)}
+                                    />
+                                </Flex>
+                            ))}
+                        </Box>
+
+                        <Box px='2em' mt='1em'>
+                            {loadingRecommended ? (
+                                <>
+                                    <Text mb='1em' fontWeight='bold'>Recommended Songs</Text>
+                                    <Center>
+                                        <Spinner size='xl' color='rgb(83, 41, 140)' emptyColor='gray.200' />
+                                    </Center>
+                                </>
+                            ) : (
+                                <>
+                                    {recommendedSongs.length > 0 && (
+                                        <>
+                                            <Text mb='1em' fontWeight='bold'>Recommended Songs</Text>
+                                            {recommendedSongs.slice(0, 5).map((track) => (
+                                                <Flex justifyContent="center">
+                                                    <Song
+                                                        key={track.id}
+                                                        track={track}
+                                                        onPlay={handleAudioPlay}
+                                                        location="addSongs"
+                                                        onAdd={() => handleAddSong(track)}
+                                                    />
+                                                </Flex>
+                                            ))}
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </Box>
                     </Box>
                 </Box>

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import noImage from './assets/Image_not_available.png';
+import PreferenceModal from './PreferenceModal';
 import {
     Box,
     Flex,
@@ -18,14 +19,7 @@ import {
     ModalHeader,
     ModalCloseButton,
     ModalBody,
-    ModalFooter,
     useDisclosure,
-    Slider,
-    SliderMark,
-    SliderTrack,
-    SliderFilledTrack,
-    Tooltip,
-    SliderThumb,
     SimpleGrid,
     Image,
     useToast
@@ -40,10 +34,6 @@ function Navbar({ username, page }) {
     const [danceValue, setDanceValue] = useState(50);
     const [mixValue, setMixValue] = useState(50);
     const [exploreValue, setExploreValue] = useState(50);
-    const [showMoodValue, setShowMood] = useState(false);
-    const [showDanceValue, setShowDance] = useState(false);
-    const [showMixValue, setShowMix] = useState(false);
-    const [showExploreValue, setShowExplore] = useState(false);
     const [profileData, setProfileData] = useState(null);
     const [userTopTracks, setUserTopTracks] = useState(null);
     const toast = useToast();
@@ -110,7 +100,7 @@ function Navbar({ username, page }) {
         }
 
         try {
-            const response = await fetch(`https://api.spotify.com/v1/me/top/tracks`, {
+            const response = await fetch(`https://api.spotify.com/v1/me/top/tracks?time_range=short_term`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
@@ -161,10 +151,10 @@ function Navbar({ username, page }) {
                 body: JSON.stringify({
                     title: 'Untitled',
                     username,
-                    mood: values.moodValue / 100,
-                    dance: values.danceValue / 100,
-                    mix: values.mixValue / 100,
-                    explore: values.exploreValue / 100,
+                    mood: values.moodValue,
+                    dance: values.danceValue,
+                    mix: values.mixValue,
+                    explore: values.exploreValue,
                     imageUrl: noImage
                 })
             });
@@ -181,7 +171,6 @@ function Navbar({ username, page }) {
             });
         }
     };
-
 
     const handleLogout = () => {
         try {
@@ -329,146 +318,20 @@ function Navbar({ username, page }) {
                             <Text fontSize="lg">Create Stitch</Text>
                         </MenuItem>
 
-                        <Modal size="xl" onClose={handlePreferenceModalClose} isOpen={isCreateOpen} motionPreset='slideInBottom' isCentered>
-                            <ModalOverlay backdropFilter='auto' backdropBlur='2px' />
-                            <ModalContent>
-                                <ModalHeader textAlign="center">
-                                    <Heading color='black'>Stitch Preferences</Heading>
-                                    <Text color='gray.700' fontSize='sm' mt='1.5em'>Answer the following questions so we can give you personalized recommendations!</Text>
-                                </ModalHeader>
-                                <ModalCloseButton />
-                                <ModalBody textAlign="center">
-                                    <Text color='black' as='b'>Mood</Text>
-                                    <Box p={2} pt={7} mb='1em'>
-                                        <Slider aria-label='slider-ex-6'
-                                            onChange={(val) => setMoodValue(val)}
-                                            onMouseEnter={() => setShowMood(true)}
-                                            onMouseLeave={() => setShowMood(false)}>
-                                            <SliderMark value={25} {...labelStyles}>
-                                                25%
-                                            </SliderMark>
-                                            <SliderMark value={50} {...labelStyles}>
-                                                50%
-                                            </SliderMark>
-                                            <SliderMark value={75} {...labelStyles}>
-                                                75%
-                                            </SliderMark>
-                                            <SliderTrack>
-                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
-                                            </SliderTrack>
-                                            <Tooltip
-                                                hasArrow
-                                                bg='rgb(83, 41, 140)'
-                                                color='white'
-                                                placement='top'
-                                                isOpen={showMoodValue}
-                                                label={`${moodValue}%`}
-                                            >
-                                                <SliderThumb />
-                                            </Tooltip>
-                                        </Slider>
-                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is consistent mood in your stitch? 100% = consistent 🙂.</Text>
-                                    </Box>
-                                    <Text color='black' as='b'>Danceability</Text>
-                                    <Box p={2} pt={7} mb='1em'>
-                                        <Slider aria-label='slider-ex-6'
-                                            onChange={(val) => setDanceValue(val)}
-                                            onMouseEnter={() => setShowDance(true)}
-                                            onMouseLeave={() => setShowDance(false)}>
-                                            <SliderMark value={25} {...labelStyles}>
-                                                25%
-                                            </SliderMark>
-                                            <SliderMark value={50} {...labelStyles}>
-                                                50%
-                                            </SliderMark>
-                                            <SliderMark value={75} {...labelStyles}>
-                                                75%
-                                            </SliderMark>
-                                            <SliderTrack>
-                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
-                                            </SliderTrack>
-                                            <Tooltip
-                                                hasArrow
-                                                bg='rgb(83, 41, 140)'
-                                                color='white'
-                                                placement='top'
-                                                isOpen={showDanceValue}
-                                                label={`${danceValue}%`}
-                                            >
-                                                <SliderThumb />
-                                            </Tooltip>
-                                        </Slider>
-                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is dancing in your stitch? 100% = dance party 🕺.</Text>
-                                    </Box>
-                                    <Text color='black' as='b'>Mixability</Text>
-                                    <Box p={2} pt={7} mb='1em'>
-                                        <Slider aria-label='slider-ex-6'
-                                            onChange={(val) => setMixValue(val)}
-                                            onMouseEnter={() => setShowMix(true)}
-                                            onMouseLeave={() => setShowMix(false)}>
-                                            <SliderMark value={25} {...labelStyles}>
-                                                25%
-                                            </SliderMark>
-                                            <SliderMark value={50} {...labelStyles}>
-                                                50%
-                                            </SliderMark>
-                                            <SliderMark value={75} {...labelStyles}>
-                                                75%
-                                            </SliderMark>
-                                            <SliderTrack>
-                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
-                                            </SliderTrack>
-                                            <Tooltip
-                                                hasArrow
-                                                bg='rgb(83, 41, 140)'
-                                                color='white'
-                                                placement='top'
-                                                isOpen={showMixValue}
-                                                label={`${mixValue}%`}
-                                            >
-                                                <SliderThumb />
-                                            </Tooltip>
-                                        </Slider>
-                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is the mixability of your stitch? 100% = DJ level 🎧.</Text>
-                                    </Box>
-                                    <Text color='black' as='b'>Explore</Text>
-                                    <Box p={2} pt={7}>
-                                        <Slider aria-label='slider-ex-6'
-                                            onChange={(val) => setExploreValue(val)}
-                                            onMouseEnter={() => setShowExplore(true)}
-                                            onMouseLeave={() => setShowExplore(false)}>
-                                            <SliderMark value={25} {...labelStyles}>
-                                                25%
-                                            </SliderMark>
-                                            <SliderMark value={50} {...labelStyles}>
-                                                50%
-                                            </SliderMark>
-                                            <SliderMark value={75} {...labelStyles}>
-                                                75%
-                                            </SliderMark>
-                                            <SliderTrack>
-                                                <SliderFilledTrack sx={{ bgColor: 'rgb(83, 41, 140)' }} />
-                                            </SliderTrack>
-                                            <Tooltip
-                                                hasArrow
-                                                bg='rgb(83, 41, 140)'
-                                                color='white'
-                                                placement='top'
-                                                isOpen={showExploreValue}
-                                                label={`${exploreValue}%`}
-                                            >
-                                                <SliderThumb />
-                                            </Tooltip>
-                                        </Slider>
-                                        <Text color='gray.700' fontSize='sm' mt='1.5em'>How important is finding music you haven't listened to? 100% = explorer 🧭.</Text>
-                                    </Box>
-                                </ModalBody>
-                                <ModalFooter display="flex" justifyContent="center">
-                                    <Button onClick={handlePreferenceSubmit}>Submit</Button>
-                                    <Button onClick={handlePreferenceModalClose} ml={3}>Close</Button>
-                                </ModalFooter>
-                            </ModalContent>
-                        </Modal>
+                        <PreferenceModal
+                            isOpen={isCreateOpen}
+                            onClose={handlePreferenceModalClose}
+                            moodValue={moodValue}
+                            setMoodValue={setMoodValue}
+                            danceValue={danceValue}
+                            setDanceValue={setDanceValue}
+                            mixValue={mixValue}
+                            setMixValue={setMixValue}
+                            exploreValue={exploreValue}
+                            setExploreValue={setExploreValue}
+                            handlePreferenceSubmit={handlePreferenceSubmit}
+                            labelStyles={labelStyles}
+                        />
 
                         <MenuItem
                             style={{ margin: 0 }}

@@ -61,7 +61,7 @@ function Visualization() {
     function calculateClusterPositions(count, centerX, centerY, radius) {
         const positions = [];
         for (let i = 0; i < count; i++) {
-            const angle = ((i / count) * 2 * Math.PI) - Math.PI / 2;
+            const angle = ((i / count) * 2 * Math.PI);
             const x = centerX + radius * Math.cos(angle);
             const y = centerY + radius * Math.sin(angle);
             positions.push({ x, y });
@@ -294,8 +294,6 @@ function Visualization() {
                             _focus={{ boxShadow: 'none', bg: 'white', color: 'black' }}
                             _active={{ boxShadow: 'none' }}
                             _hover={{
-                                opacity: 1,
-                                backgroundSize: 'auto',
                                 boxShadow: '0 0 20px -2px rgba(195, 111, 199, .5)',
                                 transform: 'translate3d(0, -0.5px, 0) scale(1.01)',
                             }}
