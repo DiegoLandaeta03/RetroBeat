@@ -26,20 +26,19 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
             borderRadius="10px"
             p="10px"
             mb="0.5em"
+            color="black"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             _hover={{
                 backgroundColor: 'rgb(225, 225, 225)',
                 transform: 'translate3d(0, -2px, 0) scale(1.03)',
                 transition: 'all 0.3s ease',
-                color: 'black',
                 cursor: 'pointer'
             }}
             width="100%"
-            maxWidth="600px"
         >
-            <Image className="songImage" src={album.images[0].url} alt="Song Image" width="4em" height="3em" />
-            <Box id="songDetails" ml="1em">
+            <Image className="songImage" src={album.images[0].url} alt="Song Image" width="3em" height="3em" />
+            <Box id="songDetails" ml="1em" >
                 <Text
                     id="songName"
                     fontSize="0.8em"
@@ -48,7 +47,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
                     whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    width="10em"
+                    width="18em"
                 >
                     {name}
                 </Text>
@@ -60,7 +59,7 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
                     whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    width="10em"
+                    width="18em"
                 >
                     {artists.map(artist => artist.name).join(', ')}
                 </Text>
@@ -71,31 +70,31 @@ function Song({ track, onPlay, location, onAdd, onRemove }) {
                     whiteSpace="nowrap"
                     overflow="hidden"
                     textOverflow="ellipsis"
-                    width="10em"
+                    width="18em"
                 >
                     {album.name}
                 </Text>
             </Box>
-            <Box ml="auto" textAlign="center" display="flex" alignItems="center" position="relative">
-                <Box mr={2}>
+            <Box ml="6em" textAlign="center" display="flex" alignItems="center" position="relative">
+                <Box mr="2em">
                     {preview_url ? (
-                        <audio ref={audioRef} controls style={{ width: '15em' }} onPlay={handleAudioPlay}>
+                        <audio ref={audioRef} controls style={{ width: '20em' }} onPlay={handleAudioPlay}>
                             <source src={preview_url} type="audio/mpeg" />
                         </audio>
                     ) : (
-                        <Box width="15em">
-                            <Text id="duration" fontSize="0.6em" mr={3}>Audio not available</Text>
+                        <Box width="20em">
+                            <Text id="duration" fontSize="0.6em">Audio not available</Text>
                         </Box>
                     )}
                 </Box>
                 <Text id="duration" fontSize="0.6em">{duration}</Text>
-                {isHovered && (
-                    <IconButton
+            </Box>
+            {isHovered && (
+                    <IconButton pos="absolute" right="-0.7em"
                         icon={location === 'addSongs' ? <AddIcon /> : <MinusIcon />}
                         onClick={location === 'addSongs' ? onAdd : onRemove}
                     />
                 )}
-            </Box>
         </Box>
     );
 }

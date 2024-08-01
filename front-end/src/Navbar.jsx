@@ -100,7 +100,7 @@ function Navbar({ username, page }) {
         }
 
         try {
-            const response = await fetch(`https://api.spotify.com/v1/me/top/tracks`, {
+            const response = await fetch(`https://api.spotify.com/v1/me/top/tracks?time_range=short_term`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }

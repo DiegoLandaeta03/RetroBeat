@@ -2,30 +2,20 @@ import {
     Editable,
     EditableInput,
     EditablePreview,
-    useEditableControls,
-    ButtonGroup,
-    IconButton,
     Flex,
-    Input,
-    Box,
     useToast
 } from '@chakra-ui/react';
-import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
 
 const CustomName = ({ stitchId }) => {
     const [title, setTitle] = useState('Untitled');
-    const [revTitle, setRevTitle] = useState('Untitled');
     const toast = useToast();
 
-    const handleChange = (event) => {
-        setTitle(event.target.value);
-    };
-
     const handleSubmit = async () => {
+        let newTitle = title;
         if (!title) {
             setTitle('Untitled');
-            return;
+            newTitle = 'Untitled';
         }
 
         try {
@@ -34,14 +24,12 @@ const CustomName = ({ stitchId }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ stitchId, title }),
+                body: JSON.stringify({ stitchId, title: newTitle }),
             });
 
             if (!response.ok) {
                 throw new Error('Failed to update stitch name');
             }
-
-            setRevTitle(title);
         } catch (error) {
             toast({
                 title: "Error",
@@ -52,10 +40,6 @@ const CustomName = ({ stitchId }) => {
                 position: "top"
             });
         }
-    };
-
-    const handleAbort = () => {
-        setTitle(revTitle);
     };
 
     useEffect(() => {
@@ -70,7 +54,6 @@ const CustomName = ({ stitchId }) => {
 
                 const data = await response.json();
                 setTitle(data.title || 'Untitled');
-                setRevTitle(data.title || 'Untitled');
             } catch (error) {
                 toast({
                     title: "Error",
@@ -84,45 +67,39 @@ const CustomName = ({ stitchId }) => {
         };
 
         fetchStitchName();
-    }, [stitchId]);
-
-    const EditableControls = () => {
-        const {
-            isEditing,
-            getSubmitButtonProps,
-            getCancelButtonProps,
-            getEditButtonProps,
-        } = useEditableControls();
-
-        return isEditing ? (
-            <ButtonGroup justifyContent='center' size='sm'>
-                <IconButton icon={<CheckIcon />} {...getSubmitButtonProps()} />
-                <IconButton icon={<CloseIcon />} {...getCancelButtonProps()} />
-            </ButtonGroup>
-        ) : (
-            <Flex justifyContent='center'>
-                <IconButton size='sm' onClick={() => setRevTitle(title)} icon={<EditIcon />} {...getEditButtonProps()} />
-            </Flex>
-        );
-    };
+    }, [stitchId, toast]);
 
     return (
-        <Box width="40em">
+        <Flex align='left' width='auto'>
             <Editable
-                textAlign='center'
-                fontSize='4xl'
+                textAlign='left'
+                fontSize='6xl'
                 fontWeight='bold'
                 color='white'
                 value={title}
-                isPreviewFocusable={false}
+                onChange={(nextValue) => setTitle(nextValue)}
+                isPreviewFocusable={true}
                 onSubmit={handleSubmit}
-                onCancel={handleAbort}
+                submitOnBlur={true}
+                width='100%'
             >
-                <EditablePreview />
-                <Input as={EditableInput} focusBorderColor='rgb(83, 41, 140)' fontSize='3xl' onChange={handleChange}/>
-                <EditableControls />
+                <EditablePreview
+                    _hover={{
+                        cursor: 'pointer'
+                    }}
+                    whiteSpace="normal"
+                    overflow="visible"
+                    textOverflow="clip"
+                    width="100%"
+                />
+                <EditableInput
+                    fontSize='6xl'
+                    _focus={{
+                        boxShadow: '0 0 0 3px rgb(83, 41, 140)',
+                    }}
+                />
             </Editable>
-        </Box>
+        </Flex >
     );
 };
 
