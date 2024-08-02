@@ -233,7 +233,7 @@ function Visualization() {
     }, [clusterData]);
 
     const handleNavigateToStitch = () => {
-        navigate(`/${username}/create`, { state: { stitchId } });
+        navigate(`/${username}/edit`, { state: { stitchId } });
     }
 
     useEffect(() => {
