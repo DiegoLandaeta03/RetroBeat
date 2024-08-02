@@ -1,6 +1,6 @@
 # SoundStitch
 
-[Planning Document](https://docs.google.com/document/d/1u82hdJBSSZGcIiLbKkvarjJCi2LfERA8GS2ZqvWjtKg/edit?usp=sharing)
+[Demo](https://drive.google.com/file/d/14AisUpUbIpGmHFdAKl3z2rExIKna4W3g/view?usp=sharing)
 
 **Story**
 - The use of big music apps such as Spotify, Apple Music, SoundCloud, and others give users the opportunity to create playlists with almost every song imaginable. This is great, but mastering the art of matching songs together with a goal or purpose is not an easy thing to achieve when  you can add as many of the songs you want and are not given feedback on what you’re creating.
