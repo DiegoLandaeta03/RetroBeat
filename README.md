@@ -34,10 +34,10 @@ Required
 - [x] TC2: Users can visualize relationships between the songs that compose their crafted ‘stitches’
 
 
-Optional
+Stretch
 - [x] User is notified about errors when navigating through the page
 - [x] User can export their ‘stitch’ to their Spotify
 - [x] User can edit the parameters of the recommendation algorithm while they are creating the ‘stitch’
-- [ ] User are alerted before returning home while making a playlist [ref]
+- [x] UX improvements
+- [x] User are alerted before returning home while making a playlist
 - [ ] User can import their playlists to the application and edit them based on the same recommendation algorithm
-- [ ] User can favorite their playlists
