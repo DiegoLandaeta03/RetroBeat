@@ -25,18 +25,30 @@ const Node = ({ node }) => {
         }
     };
 
-    const textStyle = {
+    const clusterTextStyle = {
         color: "white",
         fontSize: "xs",
         mt: "0.5em",
         textAlign: "center",
         textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
-        width: "100%"
+        width: "100%",
+    };
+
+    const songTextStyle = {
+        color: "white",
+        fontSize: "xs",
+        mt: "0.5em",
+        textAlign: "center",
+        textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+        width: "100%",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis"
     };
 
     const content = isCluster ? (
         <Tooltip label={node.tooltip} hasArrow>
-            <Text {...textStyle}>
+            <Text {...clusterTextStyle}>
                 {node.label}
             </Text>
         </Tooltip>
@@ -48,7 +60,7 @@ const Node = ({ node }) => {
                 boxSize="100%"
                 objectFit="cover"
             />
-            <Text {...textStyle}>
+            <Text {...songTextStyle}>
                 {node.label}
             </Text>
         </Box>

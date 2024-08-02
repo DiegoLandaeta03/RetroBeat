@@ -9,7 +9,7 @@ function Stitch({ stitch, username, deleteStitch }) {
     const toast = useToast();
 
     const handleEdit = (stitchId) => () => {
-        navigate(`/${username}/create`, { state: { stitchId } });
+        navigate(`/${username}/edit`, { state: { stitchId } });
     };
 
     const handleShareToSpotify = () => (event) => {

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import noImage from './assets/Image_not_available.png';
 import PreferenceModal from './PreferenceModal';
 import {
@@ -19,6 +19,7 @@ import {
     ModalHeader,
     ModalCloseButton,
     ModalBody,
+    ModalFooter,
     useDisclosure,
     SimpleGrid,
     Image,
@@ -26,16 +27,19 @@ import {
 } from "@chakra-ui/react";
 import { HamburgerIcon, LockIcon, SunIcon, AddIcon } from '@chakra-ui/icons';
 
-function Navbar({ username, page }) {
+function Navbar({ username, page, stitchId }) {
     const navigate = useNavigate();
     const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: closePreferenceModal } = useDisclosure();
     const { isOpen: isProfileOpen, onOpen: onProfileOpen, onClose: onProfileClose } = useDisclosure();
+    const { isOpen: isWarningOpen, onOpen: onWarningOpen, onClose: closeWarningModal } = useDisclosure();
     const [moodValue, setMoodValue] = useState(50);
     const [danceValue, setDanceValue] = useState(50);
     const [mixValue, setMixValue] = useState(50);
     const [exploreValue, setExploreValue] = useState(50);
     const [profileData, setProfileData] = useState(null);
     const [userTopTracks, setUserTopTracks] = useState(null);
+    const leavePage = useRef(false);
+    const [selectedPage, setSelectedPage] = useState('');
     const toast = useToast();
 
     const labelStyles = {
@@ -123,8 +127,59 @@ function Navbar({ username, page }) {
         }
     };
 
+    const handleLeavePage = async () => {
+        leavePage.current = true;
+        await deleteStitch();
+
+        closeWarningModal();
+
+        if (selectedPage == 'home') {
+            handleNavigateToHome();
+        }
+
+        if (selectedPage == 'create') {
+            handlePreferenceSubmit();
+        }
+
+        if (selectedPage == 'logout') {
+            handleLogout();
+        }
+
+        leavePage.current = false;
+    };
+
+    const deleteStitch = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/stitch/${stitchId}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete stitch');
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top"
+            });
+        }
+    };
+
     const handleNavigateToHome = () => {
+        if (page == 'create' && !leavePage.current) {
+            onWarningOpen();
+            setSelectedPage('home');
+            return;
+        }
         navigate(`/${username}`);
+    };
+
+    const handleOpenPreferenceModal = () => {
+        onCreateOpen();
     };
 
     const handlePreferenceModalClose = () => {
@@ -136,6 +191,13 @@ function Navbar({ username, page }) {
     };
 
     const handlePreferenceSubmit = async () => {
+        if (page == 'create' && !leavePage.current) {
+            onWarningOpen();
+            setSelectedPage('create');
+            closePreferenceModal();
+            return;
+        }
+
         const stitchId = await createStitch({ moodValue, danceValue, mixValue, exploreValue });
         handlePreferenceModalClose();
         navigate(`/${username}/create`, { state: { stitchId } });
@@ -173,6 +235,12 @@ function Navbar({ username, page }) {
     };
 
     const handleLogout = () => {
+        if (page == 'create' && !leavePage.current) {
+            onWarningOpen();
+            setSelectedPage('logout');
+            return;
+        }
+
         try {
             fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/logout`, {
                 method: 'DELETE',
@@ -202,6 +270,22 @@ function Navbar({ username, page }) {
                 <Heading marginLeft='0.7em' paddingLeft='0' as='h1' size='2xl' textAlign='left' flexGrow={1}>
                     SoundStitch
                 </Heading>
+
+                <Modal isOpen={isWarningOpen} onClose={closeWarningModal} motionPreset='scale' isCentered>
+                    <ModalOverlay />
+                    <ModalContent display='flex' flexDirection='column' justifyContent='center' textAlign='center'>
+                        <ModalHeader color='black'>Are you sure you want to continue?</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                            <Text color='black'>If you exit this page, all progress on the current stitch will be lost.</Text>
+                        </ModalBody>
+
+                        <ModalFooter display="flex" justifyContent="center">
+                            <Button mr={3} onClick={closeWarningModal}>Close</Button>
+                            <Button colorScheme='red' onClick={handleLeavePage}>Continue</Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
 
                 <Button
                     onClick={onProfileOpen}
@@ -304,7 +388,7 @@ function Navbar({ username, page }) {
                         <MenuItem
                             style={{ margin: 0 }}
                             icon={<AddIcon />}
-                            onClick={onCreateOpen}
+                            onClick={handleOpenPreferenceModal}
                             color={'black'}
                             _hover={{
                                 bg: 'linear-gradient(0deg, rgba(115, 41, 123, 0.9) 10%, rgba(83, 41, 140, 0.9) 100%)',

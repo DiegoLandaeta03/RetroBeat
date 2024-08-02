@@ -13,7 +13,8 @@ function App() {
           <Route path='/' element={<SpotifyLogin />} />
           <Route path='/auth/callback' element={<SpotifyCallback />} />
           <Route path='/:username' element={<Home />} />
-          <Route path='/:username/create' element={<Create />} />
+          <Route path='/:username/:action' element={<Create />} />
+          {/* <Route path='/:username/edit' element={<Create />} /> */}
           <Route path='/:username/visualization' element={<Visualization />} />
         </Routes>
       </div>

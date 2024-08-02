@@ -74,7 +74,7 @@ const CustomName = ({ stitchId }) => {
             <Editable
                 textAlign='left'
                 fontSize='6xl'
-                fontWeight='bold'
+                // fontWeight='bold'
                 color='white'
                 value={title}
                 onChange={(nextValue) => setTitle(nextValue)}
