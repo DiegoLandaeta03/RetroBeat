@@ -188,6 +188,7 @@ function Visualization() {
                 const data = await response.json();
                 setClusterData(data);
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: "Failed to load cluster data.",
@@ -209,6 +210,7 @@ function Visualization() {
                 const data = await response.json();
                 setTitle(data.title || 'Untitled');
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: "Failed to get stitch name.",

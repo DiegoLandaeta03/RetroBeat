@@ -32,6 +32,7 @@ function SpotifyCallback() {
             localStorage.setItem('accessToken', data.accessToken)
             createUser();
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: error.message,
@@ -78,6 +79,7 @@ function SpotifyCallback() {
     
                 navigate(`/${username}`);
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: error.message,
@@ -92,6 +94,7 @@ function SpotifyCallback() {
                 }, 3000);
             }
         } else {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "No access token found",

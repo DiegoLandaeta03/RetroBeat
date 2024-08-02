@@ -32,7 +32,7 @@ function Stitch({ stitch, username, deleteStitch }) {
             if (!response.ok) {
                 throw new Error(responseData.error || 'Unknown error');
             }
-    
+            toast.closeAll()
             toast({
                 title: "Success",
                 description: responseData.message,
@@ -43,6 +43,7 @@ function Stitch({ stitch, username, deleteStitch }) {
             });
     
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Failed to export stitch to Spotify",

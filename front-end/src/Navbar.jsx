@@ -52,6 +52,7 @@ function Navbar({ username, page, stitchId }) {
     const fetchProfileData = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "No access token: please logout and log back in!",
@@ -76,6 +77,7 @@ function Navbar({ username, page, stitchId }) {
             const data = await response.json();
             setProfileData(data);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: error.message,
@@ -91,6 +93,7 @@ function Navbar({ username, page, stitchId }) {
     const fetchTopUserTracks = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "No access token: please logout and log back in!",
@@ -115,6 +118,7 @@ function Navbar({ username, page, stitchId }) {
             const data = await response.json();
             setUserTopTracks(data.items);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: error.message,
@@ -158,6 +162,7 @@ function Navbar({ username, page, stitchId }) {
                 throw new Error('Failed to delete stitch');
             }
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: error.message,
@@ -223,6 +228,7 @@ function Navbar({ username, page, stitchId }) {
             const data = await response.json();
             return data.id;
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: `Error creating new stitch: ${error.message}`,

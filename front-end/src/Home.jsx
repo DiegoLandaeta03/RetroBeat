@@ -22,6 +22,7 @@ function Home() {
             const data = await response.json();
             setStitches(data);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error loading your stitches.",
@@ -52,6 +53,7 @@ function Home() {
                 setDeleteId('');
                 getStitches();
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: error.message,

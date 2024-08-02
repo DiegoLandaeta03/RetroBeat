@@ -31,6 +31,7 @@ const CustomName = ({ stitchId }) => {
                 throw new Error('Failed to update stitch name');
             }
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: error.message,
@@ -55,6 +56,7 @@ const CustomName = ({ stitchId }) => {
                 const data = await response.json();
                 setTitle(data.title || 'Untitled');
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: `Error fetching stitch name: ${error.message}`,

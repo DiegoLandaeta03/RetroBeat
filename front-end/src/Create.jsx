@@ -73,6 +73,7 @@ function Create() {
             }
             setSearchOptions(searchData.tracks.items);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: error.message,
@@ -103,6 +104,7 @@ function Create() {
                 body: JSON.stringify({ stitchId, imageUrl })
             });
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error updating stitch image",
@@ -147,6 +149,7 @@ function Create() {
                 isClosable: true,
             })
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error adding song to stitch",
@@ -161,6 +164,7 @@ function Create() {
     const getRecommendedSongs = async () => {
         await getStitchSongs();
         if (currentStitchSongs.length == 0) {
+            toast.closeAll()
             toast({
                 description: "Please add your first song to receive recommendations!",
                 status: "info",
@@ -173,6 +177,7 @@ function Create() {
 
         const currentTime = Date.now();
         if (currentTime < nextAllowedRequestTime) {
+            toast.closeAll()
             toast({
                 description: "Please wait 10 seconds before requesting recommendations again.",
                 status: "error",
@@ -189,6 +194,7 @@ function Create() {
             setRecommendedSongs(recommendedSongs);
             setNextAllowedRequestTime(currentTime + 10000);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error getting recommendations.",
@@ -215,6 +221,7 @@ function Create() {
             setMixValue(preferences.mix);
             setExploreValue(preferences.explore);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error getting stitch preferences.",
@@ -238,6 +245,7 @@ function Create() {
             }
             setCurrentStitchSongs(stitchSongs);
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error getting songs in stitch",
@@ -269,6 +277,7 @@ function Create() {
     const handleToVisualization = async () => {
         await getStitchSongs();
         if (currentStitchSongs.length <= 3) {
+            toast.closeAll()
             toast({
                 description: "Please have at least 4 songs in your stitch before seeing visualization!",
                 status: "info",
@@ -309,6 +318,7 @@ function Create() {
             mixValueRef.current = mixValue;
             exploreValueRef.current = exploreValue;
 
+            toast.closeAll()
             toast({
                 title: "Success",
                 description: "Preferences were saved!",
@@ -318,6 +328,7 @@ function Create() {
                 position: "bottom"
             });
         } catch (error) {
+            toast.closeAll()
             toast({
                 title: "Error",
                 description: "Error updating stitch preferences",
@@ -352,6 +363,7 @@ function Create() {
                 setDeleteId('');
                 getStitchSongs();
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: error.message,
