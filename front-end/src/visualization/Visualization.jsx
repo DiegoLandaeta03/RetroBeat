@@ -188,6 +188,7 @@ function Visualization() {
                 const data = await response.json();
                 setClusterData(data);
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: "Failed to load cluster data.",
@@ -209,6 +210,7 @@ function Visualization() {
                 const data = await response.json();
                 setTitle(data.title || 'Untitled');
             } catch (error) {
+                toast.closeAll()
                 toast({
                     title: "Error",
                     description: "Failed to get stitch name.",
@@ -233,7 +235,7 @@ function Visualization() {
     }, [clusterData]);
 
     const handleNavigateToStitch = () => {
-        navigate(`/${username}/create`, { state: { stitchId } });
+        navigate(`/${username}/edit`, { state: { stitchId } });
     }
 
     useEffect(() => {
@@ -267,7 +269,7 @@ function Visualization() {
         alignItems: 'center',
         justifyContent: 'center',
         width: "100vw",
-        height: "120vh",
+        height: "110vh",
         position: "relative",
         overflow: "hidden",
         cursor: isDragging ? 'grabbing' : 'grab'
@@ -281,10 +283,10 @@ function Visualization() {
                     <Flex justifyContent="center">
                         <Heading size='2xl'>{title}</Heading>
                     </Flex>
-                    <Flex justifyContent='center' mt='1em'>
-                        <Text color='white' fontSize='md' mt='1.5em' textAlign='center' width='80%'>According to Spotify, a value on valence that's closer to 1.0 will describe happy, cheerful or euphoric songs, while a value closer to 0.0 will relate sad, depressed or angry songs. This visualization clusters songs with their closest valence neighbors!</Text>
+                    <Flex justifyContent='center'>
+                        <Text color='white' fontSize='md' mt='1em' textAlign='center' width='80%'>According to Spotify, a value on valence that's closer to 1.0 will describe happy, cheerful or euphoric songs, while a value closer to 0.0 will relate sad, depressed or angry songs. This visualization clusters songs with their closest valence neighbors!</Text>
                     </Flex>
-                    <Flex justifyContent="center" mt='1em'>
+                    <Flex justifyContent="center">
                         <Button
                             className="navigateToVisualization"
                             bg="white"
@@ -302,7 +304,7 @@ function Visualization() {
                             <Text fontSize="lg">Back to Stitch</Text>
                         </Button>
                     </Flex>
-                    <Flex justifyContent="center" mt="1em">
+                    <Flex justifyContent="center">
                         <Button onClick={zoomIn} m={2} colorScheme="white">Zoom In</Button>
                         <Button onClick={zoomOut} m={2} colorScheme="white">Zoom Out</Button>
                         <Button onClick={resetZoomAndTranslation} m={2} colorScheme="white">Reset</Button>
